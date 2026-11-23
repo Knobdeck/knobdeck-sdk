@@ -1,6 +1,6 @@
 {
   "name": "@knobdeck/protocol",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "KnobDeck's wire protocol: TypeScript types and constants for every frame, generated from the Rust definitions",
   "license": "MIT",
   "type": "module",

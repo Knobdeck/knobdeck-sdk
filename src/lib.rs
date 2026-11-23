@@ -52,6 +52,15 @@ pub fn mark_setup_required(reason: impl ToString) {
     }
 }
 
+/// Tell the host whether companion `id` is connected (from any thread); see
+/// [`Runtime::companion_status`].
+pub fn companion_status(id: &str, connected: bool, detail: Option<String>) {
+    match runtime::global() {
+        Some(rt) => rt.companion_status(id, connected, detail),
+        None => log("companion_status: not connected to the host"),
+    }
+}
+
 /// This plugin's persistent data folder (`%APPDATA%\KnobDeck\plugin-data\<id>` on Windows,
 /// `~/Library/Application Support/KnobDeck/plugin-data/<id>` on macOS):
 /// survives updates and reinstalls. Works in the plugin (from the host's

@@ -112,6 +112,8 @@ export interface PluginMeta {
   description?: string;
   icon?: string;
   platforms?: string[];
+  /** Companions the plugin needs (`manifest.companions`): `{ id, name, url }`. */
+  companions?: { id: string; name: string; url: string }[];
 }
 
 export interface HostEvent {
@@ -210,6 +212,11 @@ export class Runtime {
   markSetupRequired(reason: string): void {
     this.send({ type: "setup_required", reason });
   }
+  /** Whether companion `id` (declared in `companions`) is connected, for a companion that reaches
+   * this plugin directly instead of through the hub. Send it on every change. */
+  companionStatus(id: string, connected: boolean, detail?: string): void {
+    this.send(detail === undefined ? { type: "companion", id, connected } : { type: "companion", id, connected, detail });
+  }
 
   /** @internal */ hostCall(method: string, params: unknown, timeoutMs = 30_000): Promise<unknown> {
     const id = `host-${this.#next++}`;
@@ -294,6 +301,7 @@ export class Ctx {
     throw new Fail(message);
   }
   markSetupRequired(reason: string): void { this.rt.markSetupRequired(reason); }
+  companionStatus(id: string, connected: boolean, detail?: string): void { this.rt.companionStatus(id, connected, detail); }
   toast(message: string): Promise<void> { return this.rt.toast(message); }
   appState(): Promise<AppState> { return this.rt.appState(); }
   openDial(profileId?: string): Promise<boolean> { return this.rt.openDial(profileId); }
@@ -342,6 +350,7 @@ export class Plugin {
     };
     for (const k of ["icon", "version", "author", "description"] as const) if (m[k] !== undefined) manifest[k] = m[k];
     if (m.platforms?.length) manifest.platforms = m.platforms;
+    if (m.companions?.length) manifest.companions = m.companions;
     const actions = [...this.#actions.values()].map((a) => {
       if (a.kind === "toggle" && a._states.length === 0) throw new Error(`Toggle action "${a.id}" must declare a non-empty "states" list`);
       if (a.kind === "hold" && (!a._released || !a._held)) throw new Error(`Hold action "${a.id}" must declare both "released" and "held"`);

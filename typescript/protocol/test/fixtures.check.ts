@@ -37,6 +37,8 @@ export const toHost: PluginMsg[] = [
   {"type":"host_call","id":"c1","method":"send_keys","params":{"keys":"ctrl+m"}},
   {"type":"subscribe","events":["focus_changed"]},
   {"type":"setup_required","reason":"demo token expired"},
+  {"type":"companion","id":"browser","connected":true,"detail":"Chrome, Firefox"},
+  {"type":"companion","id":"browser","connected":false},
   {"type":"host_call","id":"c2","method":"notify","params":{"message":"Copied","level":"info"}},
   {"type":"host_call","id":"c3","method":"app_state","params":{}},
   {"type":"subscribe","events":["dial_opened","dial_closed","profiles_changed"]},

@@ -68,6 +68,9 @@ pub fn generate_manifest(p: &Plugin, stage: Stage) -> Value {
     if !m.platforms.is_empty() {
         manifest.insert("platforms".into(), json!(m.platforms));
     }
+    if !m.companions.is_empty() {
+        manifest.insert("companions".into(), Value::Array(m.companions.clone()));
+    }
     // The OS context this binary can read (its SDK `os-*` features), for the plugins page.
     let uses = crate::context::uses();
     if !uses.is_empty() {

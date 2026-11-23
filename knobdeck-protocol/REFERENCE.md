@@ -275,6 +275,23 @@ The plugin's setup is no longer valid (an expired token…); the host asks the u
 {"type":"setup_required","reason":"demo token expired"}
 ```
 
+### `companion`
+
+Whether a companion the plugin works with (manifest `companions[].id`) is connected, for
+companions that reach the plugin directly instead of through the companion hub. The host
+shows it on the plugin page and on placed actions; it forgets it when the plugin stops.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `id` | `string` | yes | The companion's id (`manifest.companions[].id`). |
+| `connected` | `boolean` | yes |  |
+| `detail` | `string` | no | Shown to the user, e.g. which browsers are connected or why the call failed. |
+
+```json
+{"type":"companion","id":"browser","connected":true,"detail":"Chrome, Firefox"}
+{"type":"companion","id":"browser","connected":false}
+```
+
 ## Companion → hub (layer 2)
 
 A companion (an add-on inside another app) dials KnobDeck's hub over a WebSocket on loopback: `ws://127.0.0.1:<port>/companion`, the port and a token in `companion-hub.json` in KnobDeck's data folder (ports 32150–32154). Its `hello` names the plugin it belongs to; the plugin sees it through the `companion_*` events and host calls. Companion protocol 1; same compatibility rules as the plugin protocol.

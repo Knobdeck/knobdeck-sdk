@@ -46,7 +46,7 @@ fn every_message_type_has_a_fixture() {
         assert!(host.iter().any(|x| x == t), "no to_plugin fixture for {t:?}");
     }
     let plugin = types("to_host");
-    for t in ["ready", "ack", "done", "state", "error", "result", "host_call", "subscribe", "setup_required"] {
+    for t in ["ready", "ack", "done", "state", "error", "result", "host_call", "subscribe", "setup_required", "companion"] {
         assert!(plugin.iter().any(|x| x == t), "no to_host fixture for {t:?}");
     }
 }

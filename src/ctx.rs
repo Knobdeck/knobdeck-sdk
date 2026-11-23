@@ -129,6 +129,10 @@ impl Ctx {
     pub fn mark_setup_required(&self, reason: impl ToString) {
         self.rt.mark_setup_required(reason);
     }
+    /// Tell the host whether companion `id` is connected; see [`crate::Runtime::companion_status`].
+    pub fn companion_status(&self, id: &str, connected: bool, detail: Option<String>) {
+        self.rt.companion_status(id, connected, detail);
+    }
     /// This plugin's persistent data folder (survives updates/reinstalls).
     pub fn data_dir(&self) -> &std::path::Path {
         self.rt.data_dir()

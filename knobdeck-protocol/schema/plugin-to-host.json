@@ -181,6 +181,35 @@
       "required": [
         "type"
       ]
+    },
+    {
+      "description": "Whether a companion the plugin works with (manifest `companions[].id`) is connected, for\ncompanions that reach the plugin directly instead of through the companion hub. The host\nshows it on the plugin page and on placed actions; it forgets it when the plugin stops.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "companion"
+        },
+        "id": {
+          "description": "The companion's id (`manifest.companions[].id`).",
+          "type": "string"
+        },
+        "connected": {
+          "type": "boolean"
+        },
+        "detail": {
+          "description": "Shown to the user, e.g. which browsers are connected or why the call failed.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "connected"
+      ]
     }
   ],
   "$defs": {

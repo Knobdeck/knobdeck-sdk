@@ -13,6 +13,7 @@
 | `.action(Action)` | add an action (duplicate ids panic) |
 | `.query(id, \|q: &QueryCtx\| Ok(json!([{"value": .., "label": ..}])))` | options for `query_select` inputs; `q.inputs`, `q.installed_apps()` (os-apps, rescans) |
 | `.setup(bin, page)` `.setup_inputs(vec![..])` `.setup_assets_dir(dir)` | a setup program (second `[[bin]]` calling `run_setup`) |
+| `.companion(id, name, url)` | a companion the plugin needs (browser extension, IDE plugin…): shown on the plugin page with where to get it, and on placed actions while it isn't connected |
 | `.on_ready(\|rt: &Runtime\| ..)` | once after the first sync; clone `rt` into your threads |
 | `.subscribe(&[..])` `.on_event(\|e: &Event, rt\| ..)` | host events: `protocol::events::{DIAL_OPENED, DIAL_CLOSED, PROFILES_CHANGED}` (hosts with the `events` feature) |
 | `.on_shutdown(\|rt\| ..)` | the host kills the process 2 s later |
@@ -53,6 +54,7 @@ Fields: `instance_id`, `action_id`, `trigger` (`press`, `adjust`, `hold_start`, 
 | `set_error(msg)` | show an error, keep running |
 | `fail(msg)` | return this: report the error and stop the handler |
 | `mark_setup_required(reason)` | the host stops the plugin and asks for setup |
+| `companion_status(id, connected, detail)` | a companion that connects to the plugin itself (not the hub) came or went; send on every change. Hub companions are tracked by the host |
 | `log(msg)` `data_dir()` `runtime()` | |
 | `send_keys(keys)` | host call; last resort |
 | `toast(msg)` | short message to the user (`notify` feature; plugin log on older hosts) |
@@ -99,7 +101,7 @@ those values), `rt.set_visual(instance_id, Visual)`, `rt.notify_visual(action_id
 ## Free functions
 
 `data_dir()`, `data_file(name)`, `load_env()`, `save_env(&[(k, v)])`, `env_or(k, default)`,
-`open_url(url)`, `platform()` / `is_mac()` / `is_linux()`, `mark_setup_required(reason)`,
+`open_url(url)`, `platform()` / `is_mac()` / `is_linux()`, `mark_setup_required(reason)`, `companion_status(id, connected, detail)`,
 `run_setup(|ctx: &SetupCtx| ..)`, `log(msg)`.
 
 ## Sign-in (feature `oauth`)

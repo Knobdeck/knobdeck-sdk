@@ -277,6 +277,8 @@ pub(crate) struct Meta {
     pub setup_inputs: Vec<Value>,
     /// OSes the plugin runs on (`"windows"`, `"macos"`, `"linux"`); empty = everywhere.
     pub platforms: Vec<String>,
+    /// Companions this plugin needs (`manifest.companions`), see [`Plugin::companion`].
+    pub companions: Vec<Value>,
 }
 
 pub struct Plugin {
@@ -348,6 +350,15 @@ impl Plugin {
     /// Folder of static assets (css, images…) copied next to the setup page.
     pub fn setup_assets_dir(mut self, dir: &str) -> Self {
         self.meta.setup_assets_dir = Some(dir.into());
+        self
+    }
+    /// Declare a companion the plugin needs to do its work: an add-on inside another app (a browser
+    /// extension, an IDE plugin…). The host shows it on the plugin page with where to get it
+    /// (`url`, plus the store links the registry lists for `id`), and on placed actions while
+    /// it isn't connected. Hub companions ([`Plugin::companions`]) are tracked by the host; others
+    /// report with [`crate::companion_status`]. `id` is the registry's companion id.
+    pub fn companion(mut self, id: &str, name: &str, url: &str) -> Self {
+        self.meta.companions.push(serde_json::json!({ "id": id, "name": name, "url": url }));
         self
     }
     /// Fields the host collects before running setup (`{ key, label, type, … }`).

@@ -21,6 +21,8 @@
 {"dir":"to_host","frame":{"type":"host_call","id":"c1","method":"send_keys","params":{"keys":"ctrl+m"}}}
 {"dir":"to_host","frame":{"type":"subscribe","events":["focus_changed"]}}
 {"dir":"to_host","frame":{"type":"setup_required","reason":"demo token expired"}}
+{"dir":"to_host","frame":{"type":"companion","id":"browser","connected":true,"detail":"Chrome, Firefox"}}
+{"dir":"to_host","frame":{"type":"companion","id":"browser","connected":false}}
 {"dir":"to_plugin","frame":{"type":"event","event":"dial_opened","payload":{"profile_id":"default"}}}
 {"dir":"to_plugin","frame":{"type":"event","event":"dial_closed","payload":{}}}
 {"dir":"to_plugin","frame":{"type":"result","id":"c2","ok":true,"value":{"os":"linux","host_version":"1.0.0","dial_open":false}}}

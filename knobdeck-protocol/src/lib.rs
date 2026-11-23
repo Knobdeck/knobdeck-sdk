@@ -368,6 +368,17 @@ pub enum PluginMsg {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         reason: Option<String>,
     },
+    /// Whether a companion the plugin works with (manifest `companions[].id`) is connected, for
+    /// companions that reach the plugin directly instead of through the companion hub. The host
+    /// shows it on the plugin page and on placed actions; it forgets it when the plugin stops.
+    Companion {
+        /// The companion's id (`manifest.companions[].id`).
+        id: String,
+        connected: bool,
+        /// Shown to the user, e.g. which browsers are connected or why the call failed.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        detail: Option<String>,
+    },
     /// A frame type this version doesn't know. Receivers ignore it. Never sent.
     #[serde(other)]
     #[cfg_attr(feature = "schema", schemars(skip))]

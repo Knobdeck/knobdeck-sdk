@@ -234,6 +234,13 @@ impl Runtime {
     pub fn mark_setup_required(&self, reason: impl ToString) {
         self.send(PluginMsg::SetupRequired { reason: Some(reason.to_string()) });
     }
+    /// Tell the host whether companion `id` (declared with [`crate::Plugin::companion`]) is
+    /// connected, for a companion that reaches this plugin directly (not through the hub). Send it
+    /// on every change; `detail` is shown to the user (which apps are connected, why a call failed).
+    /// An older host ignores it.
+    pub fn companion_status(&self, id: &str, connected: bool, detail: Option<String>) {
+        self.send(PluginMsg::Companion { id: id.to_string(), connected, detail });
+    }
     /// Instance ids of every placed instance of `action_id` (short id) learned from sync.
     pub fn instances_of(&self, action_id: &str) -> Vec<String> {
         self.0

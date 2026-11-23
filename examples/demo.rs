@@ -11,6 +11,7 @@ fn main() {
         .version("1.0.0")
         .author("KnobDeck")
         .description("Reference plugin in Rust.")
+        .companion("demo", "Demo companion", "https://github.com/Knobdeck/knobdeck-sdk")
         .action(
             Action::button("ping", "Ping (log)")
                 .inputs(vec![input::text("message", "Message").placeholder("hello")])
@@ -62,6 +63,10 @@ fn main() {
         .action(
             Action::button("expire", "Expire token (setup demo)")
                 .on_press(|ctx| Ok(ctx.mark_setup_required("demo token expired"))),
+        )
+        .action(
+            Action::button("companion-status", "Companion status (companion demo)")
+                .on_press(|ctx| Ok(ctx.companion_status("demo", false, Some("demo app closed".into())))),
         )
         .action(Action::button("toast", "Toast (notify demo)").on_press(|ctx| ctx.toast("Hello from the demo")))
         .action(Action::button("where", "Host info (app_state demo)").on_press(|ctx| {

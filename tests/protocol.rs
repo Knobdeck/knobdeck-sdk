@@ -485,13 +485,17 @@ fn every_emitted_frame_fits_the_fixtures() {
     h.expect("error");
     h.send(json!({"type": "invoke", "id": "r5", "instance_id": "e1", "action_id": expire, "trigger": "press", "inputs": {}}));
     h.expect("setup_required");
+    let companion = knobdeck_sdk::make_full_id("example-rust", "companion-status");
+    h.send(json!({"type": "invoke", "id": "r6", "instance_id": "c1", "action_id": companion, "trigger": "press", "inputs": {}}));
+    let c = h.expect("companion");
+    assert_eq!((c["id"].as_str(), c["connected"].as_bool()), (Some("demo"), Some(false)));
     drop(h.stdin);
     wait_exit(&mut h.child);
 
     let seen = h.seen.borrow();
     let problems: Vec<String> = seen.iter().filter_map(|f| misfit("to_host", f)).collect();
     assert!(problems.is_empty(), "frames the plugin sent do not fit the fixtures:\n{}", problems.join("\n"));
-    for ty in ["ready", "ack", "done", "state", "error", "result", "setup_required"] {
+    for ty in ["ready", "ack", "done", "state", "error", "result", "setup_required", "companion"] {
         assert!(seen.iter().any(|f| f["type"] == ty), "the session never produced a {ty:?} frame, so it was not checked");
     }
     std::fs::remove_dir_all(&dir).ok();

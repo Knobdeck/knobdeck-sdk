@@ -446,6 +446,20 @@ export interface PluginSetupRequired {
   reason?: string;
 }
 
+/**
+ * Whether a companion the plugin works with (manifest `companions[].id`) is connected, for
+ * companions that reach the plugin directly instead of through the companion hub. The host
+ * shows it on the plugin page and on placed actions; it forgets it when the plugin stops.
+ */
+export interface PluginCompanion {
+  type: "companion";
+  /** The companion's id (`manifest.companions[].id`). */
+  id: string;
+  connected: boolean;
+  /** Shown to the user, e.g. which browsers are connected or why the call failed. */
+  detail?: string;
+}
+
 /** A frame the plugin writes to its stdout. Nothing else may go to stdout; logs go to stderr. */
 export type PluginMsg =
   | PluginReady
@@ -456,7 +470,8 @@ export type PluginMsg =
   | PluginResult
   | PluginHostCall
   | PluginSubscribe
-  | PluginSetupRequired;
+  | PluginSetupRequired
+  | PluginCompanion;
 
 /** The first frame. */
 export interface CompanionHello extends CompanionInfo {

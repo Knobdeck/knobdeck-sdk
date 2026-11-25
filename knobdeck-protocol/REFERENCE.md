@@ -34,7 +34,7 @@ The body of `hello`: who the plugin is and what the host can do.
 | `host_pid` | `number` | no | The host's process id, so a plugin can leave KnobDeck's own windows out of "the target window". |
 
 ```json
-{"type":"hello","protocol":2,"plugin_id":"example-rust","data_dir":"/tmp/knobdeck/plugin-data/example-rust","host_version":"1.0.0","features":["state_match","events","notify","app_state","open_dial","companion_hub"],"host_pid":4242}
+{"type":"hello","protocol":2,"plugin_id":"example-rust","data_dir":"/tmp/knobdeck/plugin-data/example-rust","host_version":"1.0.0","features":["state_match","events","notify","app_state","open_dial","companion_hub","state_value"],"host_pid":4242}
 ```
 
 ### `sync`
@@ -193,6 +193,7 @@ The body of a `state` frame: a new state and/or a temporary label or icon, and w
 {"type":"state","action_id":"example-rust-mute-0a1b2c3d","state":"muted","label":"Muted","icon":"mic-off"}
 {"type":"state","instance_id":"i1","icon":null}
 {"type":"state","action_id":"example-rust-device-volume-2b3c4d5e","match":{"device":"a"},"state":"40"}
+{"type":"state","instance_id":"i1","value":"42%"}
 ```
 
 ### `error`

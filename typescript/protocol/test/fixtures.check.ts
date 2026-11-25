@@ -4,7 +4,7 @@
 import type { HostMsg, PluginMsg, CompanionMsg, HubMsg, ClientMsg, ServerMsg } from "../src/index.ts";
 
 export const toPlugin: HostMsg[] = [
-  {"type":"hello","protocol":2,"plugin_id":"example-rust","data_dir":"/tmp/knobdeck/plugin-data/example-rust","host_version":"1.0.0","features":["state_match","events","notify","app_state","open_dial","companion_hub"],"host_pid":4242},
+  {"type":"hello","protocol":2,"plugin_id":"example-rust","data_dir":"/tmp/knobdeck/plugin-data/example-rust","host_version":"1.0.0","features":["state_match","events","notify","app_state","open_dial","companion_hub","state_value"],"host_pid":4242},
   {"type":"sync","instances":[{"instance_id":"i1","action_id":"example-rust-mute-0a1b2c3d","inputs":{}}]},
   {"type":"invoke","id":"r1","instance_id":"i1","action_id":"example-rust-mute-0a1b2c3d","trigger":"press","inputs":{}},
   {"type":"invoke","id":"r2","instance_id":"v1","action_id":"example-rust-volume-4e5f6a7b","trigger":"adjust","inputs":{"value":40}},
@@ -31,6 +31,7 @@ export const toHost: PluginMsg[] = [
   {"type":"state","action_id":"example-rust-mute-0a1b2c3d","state":"muted","label":"Muted","icon":"mic-off"},
   {"type":"state","instance_id":"i1","icon":null},
   {"type":"state","action_id":"example-rust-device-volume-2b3c4d5e","match":{"device":"a"},"state":"40"},
+  {"type":"state","instance_id":"i1","value":"42%"},
   {"type":"error","instance_id":"i1","message":"demo error"},
   {"type":"error","action_id":"example-rust-mute-0a1b2c3d","match":{"device":"a"},"id":"r1","message":"demo error"},
   {"type":"result","id":"q1","ok":true,"value":["apple","pear"]},

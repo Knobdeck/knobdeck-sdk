@@ -98,6 +98,10 @@ impl Ctx {
     pub fn set_icon(&self, icon: impl ToString) {
         self.set_visual(Visual::new().icon(icon));
     }
+    /// Drop the live icon so the configured one shows again.
+    pub fn clear_icon(&self) {
+        self.set_visual(Visual::new().no_icon());
+    }
     /// Fan-out visuals to ALL instances of this action.
     pub fn fan_out_visual(&self, patch: Visual) {
         self.rt.notify_visual(&self.action_id, patch);

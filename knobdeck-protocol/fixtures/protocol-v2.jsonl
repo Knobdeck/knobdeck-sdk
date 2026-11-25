@@ -13,6 +13,7 @@
 {"dir":"to_host","frame":{"type":"done","id":"r1"}}
 {"dir":"to_host","frame":{"type":"state","instance_id":"i1","state":"muted"}}
 {"dir":"to_host","frame":{"type":"state","action_id":"example-rust-mute-0a1b2c3d","state":"muted","label":"Muted","icon":"mic-off"}}
+{"dir":"to_host","frame":{"type":"state","instance_id":"i1","icon":null}}
 {"dir":"to_host","frame":{"type":"state","action_id":"example-rust-device-volume-2b3c4d5e","match":{"device":"a"},"state":"40"}}
 {"dir":"to_host","frame":{"type":"error","instance_id":"i1","message":"demo error"}}
 {"dir":"to_host","frame":{"type":"error","action_id":"example-rust-mute-0a1b2c3d","match":{"device":"a"},"id":"r1","message":"demo error"}}

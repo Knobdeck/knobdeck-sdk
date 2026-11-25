@@ -43,7 +43,9 @@ const WORKER_IDLE: Duration = Duration::from_secs(30);
 pub struct Visual {
     pub state: Option<String>,
     pub label: Option<String>,
-    pub icon: Option<String>,
+    /// `Some(Some(icon))` shows a live icon, `Some(None)` drops it (the configured icon shows
+    /// again), `None` leaves what is showing.
+    pub icon: Option<Option<String>>,
 }
 
 impl Visual {
@@ -59,7 +61,13 @@ impl Visual {
         self
     }
     pub fn icon(mut self, v: impl ToString) -> Self {
-        self.icon = Some(v.to_string());
+        self.icon = Some(Some(v.to_string()));
+        self
+    }
+    /// Drop the live icon: the user's icon (or the action's default) shows again. Not sending an
+    /// icon at all keeps the current one.
+    pub fn no_icon(mut self) -> Self {
+        self.icon = Some(None);
         self
     }
 
@@ -568,7 +576,7 @@ fn run_ordered(rt: &Runtime, key: String, job: Job) {
 /// Poll `f` for every placed instance of `action` and push state/label/icon changes.
 fn start_live(rt: Runtime, action: String, every: Duration, f: LiveFn) {
     spawn("live", move || {
-        let mut sent: HashMap<String, (Option<String>, Option<String>, Option<String>)> = HashMap::new();
+        let mut sent: HashMap<String, (Option<String>, Option<String>, Option<Option<String>>)> = HashMap::new();
         let mut failed: HashMap<String, String> = HashMap::new();
         // Each instance runs every `every`, but a newly placed one runs within a tick, not a whole interval.
         let mut due: HashMap<String, Instant> = HashMap::new();

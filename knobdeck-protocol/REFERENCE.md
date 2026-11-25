@@ -185,11 +185,12 @@ The body of a `state` frame: a new state and/or a temporary label or icon, and w
 | `match` | `Record<string, unknown>` | no | With `action_id`: only instances whose inputs hold these values (compared as strings; a missing input counts as `""`). Needs the `state_match` feature. |
 | `state` | `string` | no | The new state. A frame without it leaves state and error alone. |
 | `label` | `string` | no | A temporary label shown instead of the configured one. |
-| `icon` | `string` | no | A temporary icon name shown instead of the configured one. |
+| `icon` | `string \| null` | no | A live icon shown instead of the configured one, in three cases: a value replaces what the host shows, `null` drops the live icon so the user's pick (or the action's default) shows again, and leaving the field out keeps whatever is showing. |
 
 ```json
 {"type":"state","instance_id":"i1","state":"muted"}
 {"type":"state","action_id":"example-rust-mute-0a1b2c3d","state":"muted","label":"Muted","icon":"mic-off"}
+{"type":"state","instance_id":"i1","icon":null}
 {"type":"state","action_id":"example-rust-device-volume-2b3c4d5e","match":{"device":"a"},"state":"40"}
 ```
 

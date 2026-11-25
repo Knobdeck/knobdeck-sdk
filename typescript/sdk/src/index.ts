@@ -30,7 +30,7 @@ export function makeFullId(pluginId: string, actionId: string): string {
 export class Fail extends Error {}
 
 type Kind = "button" | "toggle" | "hold" | "slider";
-type Visual = { state?: string; label?: string; icon?: string };
+type Visual = { state?: string; label?: string; icon?: string | null };
 type Handler = (ctx: Ctx) => void | Promise<void>;
 
 /** A float the way the Rust SDK writes one (serde: `50.0`, `0.5`). */
@@ -290,7 +290,8 @@ export class Ctx {
   setState(v: string | number): void { this.rt.setState(this.instanceId, v); }
   setVisual(v: Visual): void { this.rt.setVisual(this.instanceId, v); }
   setLabel(label: string): void { this.setVisual({ label }); }
-  setIcon(icon: string): void { this.setVisual({ icon }); }
+  /** A live icon, or `null` to drop it so the configured icon shows again. Not calling it keeps the current one. */
+  setIcon(icon: string | null): void { this.setVisual({ icon }); }
   /** Every instance of this action. */
   fanOut(v: string | number): void { this.rt.send({ type: "state", action_id: this.rt.fullId(this.actionId), state: String(v) }); }
   setError(message: string): void { this.rt.setError(this.instanceId, message); }

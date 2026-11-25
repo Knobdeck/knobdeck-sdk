@@ -427,9 +427,17 @@ pub struct StateUpdate {
     /// A temporary label shown instead of the configured one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
-    /// A temporary icon name shown instead of the configured one.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub icon: Option<String>,
+    /// A live icon shown instead of the configured one, in three cases: a value replaces what the
+    /// host shows, `null` drops the live icon so the user's pick (or the action's default) shows
+    /// again, and leaving the field out keeps whatever is showing.
+    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "keep_null")]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<String>", extend("x-keepNull" = true)))]
+    pub icon: Option<Option<String>>,
+}
+
+/// Reads a present field, `null` included, as `Some(..)`: with `#[serde(default)]`, absent stays `None`.
+fn keep_null<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Option<Option<String>>, D::Error> {
+    Option::<String>::deserialize(d).map(Some)
 }
 
 /// The body of an `error` frame: what failed, and who gets it.

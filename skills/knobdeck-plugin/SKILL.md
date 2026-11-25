@@ -86,7 +86,9 @@ Action ids (`"play-pause"`) are saved in users' layouts: never rename one after 
 On any action: `.icon(..)`, `.inputs(vec![..])`, `.platforms(&["macos"])`, `.volatile()` (re-run
 the initial state on every sync, and with the `os-window` feature whenever the target window changes), `.initial(..)` / `.initial_with(|ic| ..)`, and
 `.live(every, |ic| Ok(Visual::new().label(..).icon(..).state(..)))` for content that updates
-(now playing, a counter, a gauge). `references/api.md` has the full API.
+(now playing, a counter, a gauge). `references/api.md` has the full API. Live icons: `.icon(..)` shows one,
+`.no_icon()` drops it so the user's icon (or the action's default) shows again, and sending none keeps the
+current one. Never push your own default icon as a fallback; send `.no_icon()` when you have no live icon.
 
 ## Handlers
 

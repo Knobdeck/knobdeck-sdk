@@ -29,6 +29,7 @@ export const toHost: PluginMsg[] = [
   {"type":"done","id":"r1"},
   {"type":"state","instance_id":"i1","state":"muted"},
   {"type":"state","action_id":"example-rust-mute-0a1b2c3d","state":"muted","label":"Muted","icon":"mic-off"},
+  {"type":"state","instance_id":"i1","icon":null},
   {"type":"state","action_id":"example-rust-device-volume-2b3c4d5e","match":{"device":"a"},"state":"40"},
   {"type":"error","instance_id":"i1","message":"demo error"},
   {"type":"error","action_id":"example-rust-mute-0a1b2c3d","match":{"device":"a"},"id":"r1","message":"demo error"},

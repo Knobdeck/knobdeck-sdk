@@ -254,11 +254,12 @@
           ]
         },
         "icon": {
-          "description": "A temporary icon name shown instead of the configured one.",
+          "description": "A live icon shown instead of the configured one, in three cases: a value replaces what the\nhost shows, `null` drops the live icon so the user's pick (or the action's default) shows\nagain, and leaving the field out keeps whatever is showing.",
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "x-keepNull": true
         }
       }
     },

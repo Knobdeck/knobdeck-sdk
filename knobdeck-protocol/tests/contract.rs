@@ -243,3 +243,16 @@ fn generated_files_are_current() {
     }
     assert!(stale.is_empty(), "{stale:?} out of date: run KNOBDECK_BLESS=1 cargo test -p knobdeck-protocol --features schema");
 }
+
+/// `icon` has three meanings on a `state` frame: a value, `null` (drop the live icon) and absent (keep it).
+#[test]
+fn state_icon_tells_null_from_absent() {
+    use knobdeck_protocol::{PluginMsg, StateUpdate};
+    let icon = |frame: &str| match serde_json::from_str::<PluginMsg>(frame).unwrap() {
+        PluginMsg::State(StateUpdate { icon, .. }) => icon,
+        other => panic!("{other:?}"),
+    };
+    assert_eq!(icon(r#"{"type":"state","instance_id":"i","label":"x"}"#), None);
+    assert_eq!(icon(r#"{"type":"state","instance_id":"i","icon":null}"#), Some(None));
+    assert_eq!(icon(r#"{"type":"state","instance_id":"i","icon":"mic"}"#), Some(Some("mic".into())));
+}

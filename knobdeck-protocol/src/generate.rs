@@ -146,7 +146,10 @@ fn fields(s: &Value) -> Vec<(String, Value, bool)> {
 
 // ── TypeScript ───────────────────────────────────────────────────────────────
 
+/// A field whose `null` means something (`x-keepNull`, e.g. `icon`) keeps it in its type; any other
+/// optional field is just "may be left out".
 fn ts_type(s: &Value, optional: bool) -> String {
+    let optional = optional && s["x-keepNull"] != Value::Bool(true);
     if let Some(r) = ref_name(s) {
         return r.into();
     }

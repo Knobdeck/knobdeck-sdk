@@ -311,8 +311,12 @@ export interface StateUpdate {
   state?: string;
   /** A temporary label shown instead of the configured one. */
   label?: string;
-  /** A temporary icon name shown instead of the configured one. */
-  icon?: string;
+  /**
+   * A live icon shown instead of the configured one, in three cases: a value replaces what the
+   * host shows, `null` drops the live icon so the user's pick (or the action's default) shows
+   * again, and leaving the field out keeps whatever is showing.
+   */
+  icon?: string | null;
 }
 
 /** `params` of `subscribe`. */

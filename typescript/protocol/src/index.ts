@@ -29,7 +29,7 @@ export const CONTROL_COMMANDS = ["open_dial", "close_dial", "run_item", "list_pr
 export type ControlCommand = (typeof CONTROL_COMMANDS)[number];
 
 /** Optional host behaviour, listed in `hello.features`. */
-export const FEATURES = ["state_match", "events", "notify", "app_state", "open_dial", "companion_hub"] as const;
+export const FEATURES = ["state_match", "events", "notify", "app_state", "open_dial", "companion_hub", "state_value"] as const;
 export type Feature = (typeof FEATURES)[number];
 
 /** Host events a plugin can subscribe to. */
@@ -317,6 +317,12 @@ export interface StateUpdate {
    * again, and leaving the field out keeps whatever is showing.
    */
   icon?: string | null;
+  /**
+   * The value a tile's title shows where the user put `{0}` or `%0%` (an empty title, or one
+   * that is only the placeholder, shows the value alone; a title without one shows as written).
+   * Only for hosts with `features::STATE_VALUE`; the SDK sends it as `label` to older ones.
+   */
+  value?: string;
 }
 
 /** `params` of `subscribe`. */

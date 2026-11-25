@@ -46,6 +46,8 @@ pub struct Visual {
     /// `Some(Some(icon))` shows a live icon, `Some(None)` drops it (the configured icon shows
     /// again), `None` leaves what is showing.
     pub icon: Option<Option<String>>,
+    /// The value for the tile's title template (`{0}` / `%0%`), see [`Visual::value`].
+    pub value: Option<String>,
 }
 
 impl Visual {
@@ -64,6 +66,14 @@ impl Visual {
         self.icon = Some(Some(v.to_string()));
         self
     }
+    /// The value the tile's title shows where the user put `{0}` or `%0%` (`5 Hour {0}`); an
+    /// empty title shows the value alone, a title without a placeholder shows as written. The
+    /// user's title stays theirs: prefer this to [`Visual::label`] for a number or a status.
+    /// A host without the `state_value` feature gets it as the label instead.
+    pub fn value(mut self, v: impl ToString) -> Self {
+        self.value = Some(v.to_string());
+        self
+    }
     /// Drop the live icon: the user's icon (or the action's default) shows again. Not sending an
     /// icon at all keeps the current one.
     pub fn no_icon(mut self) -> Self {
@@ -72,7 +82,17 @@ impl Visual {
     }
 
     fn frame(self, target: Target) -> PluginMsg {
-        PluginMsg::State(StateUpdate { target, state: self.state, label: self.label, icon: self.icon })
+        PluginMsg::State(StateUpdate { target, state: self.state, label: self.label, icon: self.icon, value: self.value })
+    }
+
+    /// For a host without `state_value`: the value goes as the label (what plugins did before).
+    fn for_host(mut self, state_value: bool) -> Self {
+        if !state_value {
+            if let Some(v) = self.value.take() {
+                self.label.get_or_insert(v);
+            }
+        }
+        self
     }
 }
 
@@ -190,9 +210,11 @@ impl Runtime {
         self.send(Visual::new().state(value).frame(Target::action(self.full_id(action_id))));
     }
     pub fn set_visual(&self, instance_id: &str, patch: Visual) {
+        let patch = patch.for_host(self.has_feature(features::STATE_VALUE));
         self.send(patch.frame(Target::instance(instance_id)));
     }
     pub fn notify_visual(&self, action_id: &str, patch: Visual) {
+        let patch = patch.for_host(self.has_feature(features::STATE_VALUE));
         self.send(patch.frame(Target::action(self.full_id(action_id))));
     }
     /// Targeted fan-out: set the state of every instance of an action (short id)
@@ -205,6 +227,7 @@ impl Runtime {
     /// Targeted fan-out of visuals; see [`Runtime::notify_matching`].
     pub fn notify_visual_matching(&self, action_id: &str, filter: &Value, patch: Visual) {
         let filter = filter.as_object().cloned().unwrap_or_default();
+        let patch = patch.for_host(self.has_feature(features::STATE_VALUE));
         if self.0.state_match {
             self.send(patch.frame(Target::action(self.full_id(action_id)).matching(filter)));
         } else {
@@ -923,5 +946,20 @@ mod match_tests {
         assert!(inputs_match(&inputs, &f(json!({"missing": ""}))));
         assert!(!inputs_match(&inputs, &f(json!({"missing": "x"}))));
         assert!(inputs_match(&inputs, &f(json!({}))));
+    }
+}
+
+#[cfg(test)]
+mod value_tests {
+    use super::*;
+
+    #[test]
+    fn an_old_host_gets_the_value_as_the_label() {
+        let v = Visual::new().value("42%").for_host(false);
+        assert_eq!((v.label.as_deref(), v.value.as_deref()), (Some("42%"), None));
+        let kept = Visual::new().label("Own").value("42%").for_host(false);
+        assert_eq!(kept.label.as_deref(), Some("Own"));
+        let new = Visual::new().value("42%").for_host(true);
+        assert_eq!((new.label, new.value.as_deref()), (None, Some("42%")));
     }
 }

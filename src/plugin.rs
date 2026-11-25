@@ -71,6 +71,8 @@ impl Initial {
 pub struct Action {
     pub(crate) id: String,
     pub(crate) label: String,
+    /// A new tile's title, when it isn't the action's name (`{0}`: the value the plugin sends).
+    pub(crate) title: Option<String>,
     pub(crate) kind: Kind,
     pub(crate) icon: Option<String>,
     pub(crate) inputs: Vec<Value>,
@@ -104,6 +106,7 @@ impl Action {
         Action {
             id: id.into(),
             label: label.into(),
+            title: None,
             kind,
             icon: None,
             inputs: vec![],
@@ -154,6 +157,13 @@ impl Action {
 
     pub fn icon(mut self, icon: &str) -> Self {
         self.icon = Some(icon.into());
+        self
+    }
+    /// The title a new tile of this action starts with, when it isn't the action's name. Put
+    /// `{0}` where the value the action sends ([`crate::Visual::value`]) goes, e.g. `"5 Hour {0}"`;
+    /// the user can change it. Without it a new tile is titled with the action's name.
+    pub fn title(mut self, title: &str) -> Self {
+        self.title = Some(title.into());
         self
     }
     /// Config inputs; use the helpers in [`crate::input`] or raw `json!` objects.

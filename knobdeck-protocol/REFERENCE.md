@@ -10,7 +10,7 @@ Machine-readable forms: `schema/*.json` (JSON Schema for each direction of both 
 
 ## Names
 
-- **Features (`hello.features`):** `state_match`, `events`, `notify`, `app_state`, `open_dial`, `companion_hub`
+- **Features (`hello.features`):** `state_match`, `events`, `notify`, `app_state`, `open_dial`, `companion_hub`, `state_value`
 - **Events (`ready.subscribe`, `subscribe`, `event.event`):** `focus_changed`, `dial_opened`, `dial_closed`, `profiles_changed`, `companion_connected`, `companion_disconnected`, `companion_event`
 - **Triggers (`invoke.trigger`):** `press`, `hold_start`, `hold_end`, `adjust`
 - **Request methods (`request.method`):** `query`, `wheel`
@@ -34,7 +34,7 @@ The body of `hello`: who the plugin is and what the host can do.
 | `host_pid` | `number` | no | The host's process id, so a plugin can leave KnobDeck's own windows out of "the target window". |
 
 ```json
-{"type":"hello","protocol":2,"plugin_id":"example-rust","data_dir":"/tmp/knobdeck/plugin-data/example-rust","host_version":"1.0.0","features":["state_match","events","notify","app_state","open_dial","companion_hub"],"host_pid":4242}
+{"type":"hello","protocol":2,"plugin_id":"example-rust","data_dir":"/tmp/knobdeck/plugin-data/example-rust","host_version":"1.0.0","features":["state_match","events","notify","app_state","open_dial","companion_hub","state_value"],"host_pid":4242}
 ```
 
 ### `sync`
@@ -186,12 +186,14 @@ The body of a `state` frame: a new state and/or a temporary label or icon, and w
 | `state` | `string` | no | The new state. A frame without it leaves state and error alone. |
 | `label` | `string` | no | A temporary label shown instead of the configured one. |
 | `icon` | `string \| null` | no | A live icon shown instead of the configured one, in three cases: a value replaces what the host shows, `null` drops the live icon so the user's pick (or the action's default) shows again, and leaving the field out keeps whatever is showing. |
+| `value` | `string` | no | The value a tile's title shows where the user put `{0}` or `%0%` (an empty title, or one that is only the placeholder, shows the value alone; a title without one shows as written). Only for hosts with `features::STATE_VALUE`; the SDK sends it as `label` to older ones. |
 
 ```json
 {"type":"state","instance_id":"i1","state":"muted"}
 {"type":"state","action_id":"example-rust-mute-0a1b2c3d","state":"muted","label":"Muted","icon":"mic-off"}
 {"type":"state","instance_id":"i1","icon":null}
 {"type":"state","action_id":"example-rust-device-volume-2b3c4d5e","match":{"device":"a"},"state":"40"}
+{"type":"state","instance_id":"i1","value":"42%"}
 ```
 
 ### `error`

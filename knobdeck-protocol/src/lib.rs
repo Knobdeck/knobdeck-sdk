@@ -56,8 +56,11 @@ pub mod features {
     /// ([`crate::companion`]).
     pub const COMPANION_HUB: &str = "companion_hub";
 
+    /// A `state` frame may carry `value`: the host fills the tile title's `{0}` / `%0%` with it.
+    pub const STATE_VALUE: &str = "state_value";
+
     /// Every feature defined by this version of the protocol.
-    pub const ALL: &[&str] = &[STATE_MATCH, EVENTS, NOTIFY, APP_STATE, OPEN_DIAL, COMPANION_HUB];
+    pub const ALL: &[&str] = &[STATE_MATCH, EVENTS, NOTIFY, APP_STATE, OPEN_DIAL, COMPANION_HUB, STATE_VALUE];
 }
 
 /// Host events a plugin can subscribe to (`ready.subscribe`, `subscribe`).
@@ -433,6 +436,11 @@ pub struct StateUpdate {
     #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "keep_null")]
     #[cfg_attr(feature = "schema", schemars(with = "Option<String>", extend("x-keepNull" = true)))]
     pub icon: Option<Option<String>>,
+    /// The value a tile's title shows where the user put `{0}` or `%0%` (an empty title, or one
+    /// that is only the placeholder, shows the value alone; a title without one shows as written).
+    /// Only for hosts with [`features::STATE_VALUE`]; the SDK sends it as `label` to older ones.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub value: Option<String>,
 }
 
 /// Reads a present field, `null` included, as `Some(..)`: with `#[serde(default)]`, absent stays `None`.

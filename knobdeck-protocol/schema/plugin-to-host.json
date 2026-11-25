@@ -260,6 +260,13 @@
             "null"
           ],
           "x-keepNull": true
+        },
+        "value": {
+          "description": "The value a tile's title shows where the user put `{0}` or `%0%` (an empty title, or one\nthat is only the placeholder, shows the value alone; a title without one shows as written).\nOnly for hosts with [`features::STATE_VALUE`]; the SDK sends it as `label` to older ones.",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },

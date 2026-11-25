@@ -89,6 +89,9 @@ the initial state on every sync, and with the `os-window` feature whenever the t
 (now playing, a counter, a gauge). `references/api.md` has the full API. Live icons: `.icon(..)` shows one,
 `.no_icon()` drops it so the user's icon (or the action's default) shows again, and sending none keeps the
 current one. Never push your own default icon as a fallback; send `.no_icon()` when you have no live icon.
+For a number or status on a tile, send `.value(..)`, not `.label(..)`: the host puts it where the user's
+title has `{0}` or `%0%` (`5 Hour {0}`), an empty title shows it alone, and the user's title stays theirs.
+`.title("{0}")` on the action gives new tiles that starting title.
 
 ## Handlers
 

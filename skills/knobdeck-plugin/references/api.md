@@ -87,7 +87,7 @@ Dolphin via AT-SPI; error when the target isn't a file manager; 10 000 paths cap
 strip_browser_name}`. `os::pointer::{position, element_at -> Element { role, name, pid }}`.
 `os::clipboard::{types -> [Kind::Text|Files|Image|Html], text, files, image -> Image { mime, bytes }}`.
 
-`Visual::new().label(..).icon(..).state(..)`
+`Visual::new().label(..).icon(..).state(..).value(..)` (`value`: fills the title's `{0}` / `%0%`; sent as the label to a host without `state_value`)
 
 ## Runtime (background threads)
 

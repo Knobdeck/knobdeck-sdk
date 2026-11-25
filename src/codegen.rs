@@ -160,6 +160,9 @@ pub fn generate_actions(p: &Plugin) -> Result<Value, String> {
         let mut e = Map::new();
         e.insert("id".into(), make_full_id(&p.meta.id, id).into());
         e.insert("label".into(), a.label.clone().into());
+        if let Some(title) = &a.title {
+            e.insert("title".into(), title.clone().into());
+        }
         e.insert("type".into(), a.kind.as_str().into());
         if let Some(icon) = &a.icon {
             e.insert("icon".into(), icon.clone().into());

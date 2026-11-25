@@ -10,7 +10,7 @@ Machine-readable forms: `schema/*.json` (JSON Schema for each direction of both 
 
 ## Names
 
-- **Features (`hello.features`):** `state_match`, `events`, `notify`, `app_state`, `open_dial`, `companion_hub`
+- **Features (`hello.features`):** `state_match`, `events`, `notify`, `app_state`, `open_dial`, `companion_hub`, `state_value`
 - **Events (`ready.subscribe`, `subscribe`, `event.event`):** `focus_changed`, `dial_opened`, `dial_closed`, `profiles_changed`, `companion_connected`, `companion_disconnected`, `companion_event`
 - **Triggers (`invoke.trigger`):** `press`, `hold_start`, `hold_end`, `adjust`
 - **Request methods (`request.method`):** `query`, `wheel`
@@ -186,6 +186,7 @@ The body of a `state` frame: a new state and/or a temporary label or icon, and w
 | `state` | `string` | no | The new state. A frame without it leaves state and error alone. |
 | `label` | `string` | no | A temporary label shown instead of the configured one. |
 | `icon` | `string \| null` | no | A live icon shown instead of the configured one, in three cases: a value replaces what the host shows, `null` drops the live icon so the user's pick (or the action's default) shows again, and leaving the field out keeps whatever is showing. |
+| `value` | `string` | no | The value a tile's title shows where the user put `{0}` or `%0%` (an empty title, or one that is only the placeholder, shows the value alone; a title without one shows as written). Only for hosts with `features::STATE_VALUE`; the SDK sends it as `label` to older ones. |
 
 ```json
 {"type":"state","instance_id":"i1","state":"muted"}

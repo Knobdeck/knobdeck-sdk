@@ -30,7 +30,9 @@ export function makeFullId(pluginId: string, actionId: string): string {
 export class Fail extends Error {}
 
 type Kind = "button" | "toggle" | "hold" | "slider";
-type Visual = { state?: string; label?: string; icon?: string | null };
+/** `value`: what the tile title shows where the user put `{0}` / `%0%` (a host without the
+ * `state_value` feature gets it as `label`). */
+type Visual = { state?: string; label?: string; icon?: string | null; value?: string };
 type Handler = (ctx: Ctx) => void | Promise<void>;
 
 /** A float the way the Rust SDK writes one (serde: `50.0`, `0.5`). */
@@ -44,6 +46,7 @@ function ordered(v: Visual): Visual {
   if (v.state !== undefined) o.state = v.state;
   if (v.label !== undefined) o.label = v.label;
   if (v.icon !== undefined) o.icon = v.icon;
+  if (v.value !== undefined) o.value = v.value;
   return o;
 }
 
@@ -197,14 +200,20 @@ export class Runtime {
     this.send({ type: "state", instance_id: instanceId, state: String(value) });
   }
   setVisual(instanceId: string, v: Visual): void {
-    this.send({ type: "state", instance_id: instanceId, ...ordered(v) });
+    this.send({ type: "state", instance_id: instanceId, ...ordered(this.#forHost(v)) });
+  }
+  /** A host without `state_value`: the value goes as the label (what plugins did before). */
+  #forHost(v: Visual): Visual {
+    if (v.value === undefined || this.hasFeature("state_value")) return v;
+    const { value, ...rest } = v;
+    return rest.label === undefined ? { ...rest, label: value } : rest;
   }
   /** Every instance of `action` (short id). */
   notify(action: string, value: string | number): void {
     this.send({ type: "state", action_id: this.fullId(action), state: String(value) });
   }
   notifyVisual(action: string, v: Visual): void {
-    this.send({ type: "state", action_id: this.fullId(action), ...ordered(v) });
+    this.send({ type: "state", action_id: this.fullId(action), ...ordered(this.#forHost(v)) });
   }
   setError(instanceId: string, message: string): void {
     this.send({ type: "error", instance_id: instanceId, message });

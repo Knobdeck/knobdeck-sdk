@@ -122,7 +122,7 @@ impl SignalDecl {
     pub fn valid_id(id: &str) -> bool {
         let mut parts = id.split('.');
         let ok = |p: &str| !p.is_empty() && p.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_' || c == '-');
-        id.contains('.') && parts.all(|p| ok(p))
+        id.contains('.') && parts.all(ok)
     }
 
     /// The value as this declaration allows it: the same shape, with an `enum`'s values checked

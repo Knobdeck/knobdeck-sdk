@@ -439,6 +439,14 @@ impl Plugin {
         self
     }
 
+    /// Declare several signals at once; see [`Plugin::signal`].
+    pub fn signals(mut self, decls: Vec<knobdeck_protocol::signals::SignalDecl>) -> Self {
+        for d in decls {
+            self = self.signal(d);
+        }
+        self
+    }
+
     /// The host asks for a signal's current value (mode `sample` / `both`), e.g. as the dial opens.
     /// Return the value, or an error when there is none now (the host then treats it as unset).
     pub fn on_signal_read(mut self, f: impl Fn(&str, &Runtime) -> Result<Value> + Send + Sync + 'static) -> Self {

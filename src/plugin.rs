@@ -29,7 +29,6 @@ pub(crate) type QueryFn = Arc<dyn Fn(&QueryCtx) -> Result<Value> + Send + Sync>;
 pub(crate) type ReadyFn = Arc<dyn Fn(&Runtime) -> Result + Send + Sync>;
 pub(crate) type EventFn = Arc<dyn Fn(&Event, &Runtime) -> Result + Send + Sync>;
 pub(crate) type LiveFn = Arc<dyn Fn(&InitialCtx) -> Result<Visual> + Send + Sync>;
-pub(crate) type SignalReadFn = Arc<dyn Fn(&str, &Runtime) -> Result<Value> + Send + Sync>;
 pub(crate) type SignalDemandFn = Arc<dyn Fn(&[String], &Runtime) + Send + Sync>;
 pub(crate) type ShutdownFn = Arc<dyn Fn(&Runtime) + Send + Sync>;
 
@@ -303,7 +302,6 @@ pub struct Plugin {
     pub(crate) on_shutdown: Option<ShutdownFn>,
     pub(crate) subscriptions: Vec<String>,
     pub(crate) signals: Vec<knobdeck_protocol::signals::SignalDecl>,
-    pub(crate) on_signal_read: Option<SignalReadFn>,
     pub(crate) on_signal_demand: Option<SignalDemandFn>,
     pub(crate) ready_fired: AtomicBool,
 }
@@ -322,7 +320,6 @@ impl Plugin {
             on_shutdown: None,
             subscriptions: vec![],
             signals: vec![],
-            on_signal_read: None,
             on_signal_demand: None,
             ready_fired: AtomicBool::new(false),
         }
@@ -447,15 +444,9 @@ impl Plugin {
         self
     }
 
-    /// The host asks for a signal's current value (mode `sample` / `both`), e.g. as the dial opens.
-    /// Return the value, or an error when there is none now (the host then treats it as unset).
-    pub fn on_signal_read(mut self, f: impl Fn(&str, &Runtime) -> Result<Value> + Send + Sync + 'static) -> Self {
-        self.on_signal_read = Some(Arc::new(f));
-        self
-    }
-
     /// The signals some profile rule uses changed (also at start). Start watchers for the listed
     /// signals and stop the others; the list is every wanted signal of this plugin, not a diff.
+    /// Report each newly watched signal's current value right away, then on every change.
     /// Runs on its own thread.
     pub fn on_signal_demand(mut self, f: impl Fn(&[String], &Runtime) + Send + Sync + 'static) -> Self {
         self.on_signal_demand = Some(Arc::new(f));

@@ -22,7 +22,6 @@ export const toPlugin: HostMsg[] = [
   {"type":"event","event":"companion_disconnected","payload":{"link":"photoshop-1"}},
   {"type":"result","id":"c5","ok":true,"value":{"id":"7","ok":true,"result":{"tool":"brush"}}},
   {"type":"signal_demand","signals":["files.extension"]},
-  {"type":"request","id":"s1","method":"signal_read","params":{"signal":"files.extension"}},
 ];
 
 export const toHost: PluginMsg[] = [

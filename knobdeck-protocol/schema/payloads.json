@@ -417,10 +417,6 @@
           "type": "boolean",
           "description": "The value is a set (an array): several files with different extensions are selected."
         },
-        "mode": {
-          "$ref": "#/$defs/SignalMode",
-          "default": "push"
-        },
         "options": {
           "type": "array",
           "items": {
@@ -463,26 +459,6 @@
         }
       ],
       "description": "What a signal's value is."
-    },
-    "SignalMode": {
-      "oneOf": [
-        {
-          "type": "string",
-          "const": "push",
-          "description": "The plugin sends `signal` frames as the value changes."
-        },
-        {
-          "type": "string",
-          "const": "sample",
-          "description": "The host asks (`signal_read`) when it needs the value, e.g. as the dial opens."
-        },
-        {
-          "type": "string",
-          "const": "both",
-          "description": "Both: pushed, and asked when it must be fresh."
-        }
-      ],
-      "description": "How the host gets the signal's value."
     },
     "SignalOption": {
       "type": "object",

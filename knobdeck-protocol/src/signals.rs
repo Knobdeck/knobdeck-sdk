@@ -2,6 +2,10 @@
 //! file manager, a timeline's type, the scene in a DAW). KnobDeck keeps the last value of each
 //! and checks it against the conditions of the profiles' auto-open rules.
 //!
+//! Signals are pushed, never read on demand: a plugin watches its source and sends a `signal`
+//! frame when the value changes (and once when it starts watching). If a value can't be had from
+//! an event or a hook, it is not a signal.
+//!
 //! A plugin declares its signals in `manifest.json` under `signals` (the host reads them while
 //! the plugin is not running, to build the rule editor), then reports values with the `signal`
 //! frame. This is not the host-to-plugin [`events`](crate::events) list: those tell a plugin what
@@ -34,20 +38,6 @@ pub enum SignalKind {
     Bool,
 }
 
-/// How the host gets the signal's value.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "snake_case")]
-pub enum SignalMode {
-    /// The plugin sends `signal` frames as the value changes.
-    #[default]
-    Push,
-    /// The host asks (`signal_read`) when it needs the value, e.g. as the dial opens.
-    Sample,
-    /// Both: pushed, and asked when it must be fresh.
-    Both,
-}
-
 /// One allowed value of an `enum` signal.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -73,8 +63,6 @@ pub struct SignalDecl {
     /// The value is a set (an array): several files with different extensions are selected.
     #[serde(default, skip_serializing_if = "is_false")]
     pub multi: bool,
-    #[serde(default)]
-    pub mode: SignalMode,
     /// The allowed values of an `enum` signal.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub options: Vec<SignalOption>,
@@ -90,7 +78,7 @@ fn is_false(b: &bool) -> bool {
 impl SignalDecl {
     /// A declaration of `kind`, pushed by the plugin, valid on every OS.
     pub fn new(id: &str, label: &str, kind: SignalKind) -> Self {
-        SignalDecl { id: id.into(), label: label.into(), description: None, kind, multi: false, mode: SignalMode::Push, options: vec![], platforms: vec![] }
+        SignalDecl { id: id.into(), label: label.into(), description: None, kind, multi: false, options: vec![], platforms: vec![] }
     }
     /// An `enum` signal with these `(value, label)` options.
     pub fn choice(id: &str, label: &str, options: &[(&str, &str)]) -> Self {
@@ -101,10 +89,6 @@ impl SignalDecl {
     /// The value is a set.
     pub fn multi(mut self) -> Self {
         self.multi = true;
-        self
-    }
-    pub fn mode(mut self, mode: SignalMode) -> Self {
-        self.mode = mode;
         self
     }
     pub fn description(mut self, text: &str) -> Self {
@@ -167,7 +151,6 @@ mod tests {
             description: None,
             kind,
             multi,
-            mode: SignalMode::Push,
             options: ["pdf", "png"].map(|v| SignalOption { value: v.into(), label: None }).into(),
             platforms: vec![],
         }

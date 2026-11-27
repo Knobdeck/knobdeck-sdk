@@ -41,7 +41,7 @@ export const TRIGGERS = ["press", "hold_start", "hold_end", "adjust"] as const;
 export type Trigger = (typeof TRIGGERS)[number];
 
 /** Values of `request.method`. */
-export const REQUESTS = ["query", "wheel", "signal_read"] as const;
+export const REQUESTS = ["query", "wheel"] as const;
 export type RequestMethod = (typeof REQUESTS)[number];
 
 /** Values of `host_call.method`. */
@@ -306,7 +306,6 @@ export interface SignalDecl {
   kind?: SignalKind;
   /** The value is a set (an array): several files with different extensions are selected. */
   multi?: boolean;
-  mode?: SignalMode;
   /** The allowed values of an `enum` signal. */
   options?: SignalOption[];
   /** OSes the signal exists on (`windows`, `macos`, `linux`). Empty: every OS. */
@@ -315,10 +314,6 @@ export interface SignalDecl {
 
 /** What a signal's value is. */
 export interface SignalKind {
-}
-
-/** How the host gets the signal's value. */
-export interface SignalMode {
 }
 
 /** One allowed value of an `enum` signal. */
@@ -407,7 +402,8 @@ export interface HostResult extends CallResult {
 
 /**
  * The signals (of those this plugin declares) that some profile rule uses now; replaces the
- * previous list. A plugin watches only these. Needs `signals`.
+ * previous list. A plugin watches only these, and reports each one's current value as it
+ * starts watching. Needs `signals`.
  */
 export interface HostSignalDemand {
   type: "signal_demand";

@@ -13,7 +13,7 @@ Machine-readable forms: `schema/*.json` (JSON Schema for each direction of both 
 - **Features (`hello.features`):** `state_match`, `events`, `notify`, `app_state`, `open_dial`, `companion_hub`, `state_value`, `signals`
 - **Events (`ready.subscribe`, `subscribe`, `event.event`):** `focus_changed`, `dial_opened`, `dial_closed`, `profiles_changed`, `companion_connected`, `companion_disconnected`, `companion_event`
 - **Triggers (`invoke.trigger`):** `press`, `hold_start`, `hold_end`, `adjust`
-- **Request methods (`request.method`):** `query`, `wheel`, `signal_read`
+- **Request methods (`request.method`):** `query`, `wheel`
 - **Host calls (`host_call.method`):** `send_keys`, `notify`, `app_state`, `open_dial`, `companion_request`, `companion_links`
 
 ## Host → plugin
@@ -82,7 +82,6 @@ Ask the plugin for data; answered by a `result` with the same `id`.
 
 ```json
 {"type":"request","id":"q1","method":"query","params":{"query_id":"items","inputs":{"group":"fruit"}}}
-{"type":"request","id":"s1","method":"signal_read","params":{"signal":"files.extension"}}
 ```
 
 ### `event`
@@ -126,7 +125,8 @@ The answer to a plugin's `host_call`.
 ### `signal_demand`
 
 The signals (of those this plugin declares) that some profile rule uses now; replaces the
-previous list. A plugin watches only these. Needs `signals`.
+previous list. A plugin watches only these, and reports each one's current value as it
+starts watching. Needs `signals`.
 
 | Field | Type | Required | Meaning |
 |---|---|---|---|
@@ -731,19 +731,12 @@ One entry of a manifest's `signals`.
 | `description` | `string` | no |  |
 | `kind` | `SignalKind` | no |  |
 | `multi` | `boolean` | no | The value is a set (an array): several files with different extensions are selected. |
-| `mode` | `SignalMode` | no |  |
 | `options` | `SignalOption[]` | no | The allowed values of an `enum` signal. |
 | `platforms` | `string[]` | no | OSes the signal exists on (`windows`, `macos`, `linux`). Empty: every OS. |
 
 ### `SignalKind`
 
 What a signal's value is.
-
-No fields besides `type`.
-
-### `SignalMode`
-
-How the host gets the signal's value.
 
 No fields besides `type`.
 

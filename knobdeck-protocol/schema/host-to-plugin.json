@@ -116,7 +116,7 @@
       ]
     },
     {
-      "description": "The signals (of those this plugin declares) that some profile rule uses now; replaces the\nprevious list. A plugin watches only these. Needs `signals`.",
+      "description": "The signals (of those this plugin declares) that some profile rule uses now; replaces the\nprevious list. A plugin watches only these, and reports each one's current value as it\nstarts watching. Needs `signals`.",
       "type": "object",
       "properties": {
         "type": {

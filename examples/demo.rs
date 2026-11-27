@@ -98,14 +98,8 @@ fn main() {
             Ok(())
         })
         .signal(
-            knobdeck_sdk::SignalDecl::choice("files.extension", "File type", &[("pdf", "PDF"), ("png", "PNG")])
-                .multi()
-                .mode(knobdeck_sdk::SignalMode::Both),
+            knobdeck_sdk::SignalDecl::choice("files.extension", "File type", &[("pdf", "PDF"), ("png", "PNG")]).multi(),
         )
-        .on_signal_read(|id, _| match id {
-            "files.extension" => Ok(json!(["pdf", "png"])),
-            _ => Err(knobdeck_sdk::Error::msg("no value")),
-        })
         .on_signal_demand(|wanted, rt| {
             // A real plugin starts or stops its watcher here; the demo reports once.
             if wanted.iter().any(|w| w == "files.extension") {

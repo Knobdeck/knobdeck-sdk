@@ -686,7 +686,6 @@ fn dispatch(core: &Arc<Core>, msg: Value) {
         "request" => match msg["method"].as_str().unwrap_or("") {
             "query" => spawn("query", move || handle_query(&c, &msg)),
             "wheel" => spawn("wheel", move || handle_wheel(&c, &msg)),
-            "signal_read" => spawn("signal_read", move || handle_signal_read(&c, &msg)),
             other => core.rt.send(PluginMsg::Result(CallResult::err(id_of(&msg), format!("unknown request method \"{other}\"")))),
         },
         "event" => handle_event(core, msg),
@@ -937,15 +936,6 @@ fn handle_query(core: &Arc<Core>, msg: &Value) {
         }),
     };
     reply(core, &msg["id"], outcome, &format!("query ({qid})"));
-}
-
-fn handle_signal_read(core: &Arc<Core>, msg: &Value) {
-    let id = msg["params"]["signal"].as_str().unwrap_or("");
-    let outcome = match core.plugin.on_signal_read.as_ref() {
-        Some(f) if core.plugin.signals.iter().any(|d| d.id == id) => f(id, &core.rt),
-        _ => Err(Error::msg(format!("no value for signal \"{id}\""))),
-    };
-    reply(core, &msg["id"], outcome, &format!("signal_read ({id})"));
 }
 
 fn handle_wheel(core: &Arc<Core>, msg: &Value) {

@@ -39,7 +39,6 @@
 {"dir":"to_host","frame":{"type":"host_call","id":"c5","method":"companion_request","params":{"link":"photoshop-1","action":"set-tool","params":{"tool":"brush"},"timeout_ms":5000}}}
 {"dir":"to_host","frame":{"type":"host_call","id":"c6","method":"companion_links","params":{}}}
 {"dir":"to_plugin","frame":{"type":"signal_demand","signals":["files.extension"]}}
-{"dir":"to_plugin","frame":{"type":"request","id":"s1","method":"signal_read","params":{"signal":"files.extension"}}}
 {"dir":"to_host","frame":{"type":"result","id":"s1","ok":true,"value":["pdf","png"]}}
 {"dir":"to_host","frame":{"type":"signal","signal":"files.extension","value":["pdf","png"]}}
 {"dir":"to_host","frame":{"type":"signal_clear","signal":"files.extension"}}

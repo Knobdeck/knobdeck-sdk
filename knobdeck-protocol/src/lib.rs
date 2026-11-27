@@ -60,7 +60,7 @@ pub mod features {
     pub const STATE_VALUE: &str = "state_value";
 
     /// The host takes the plugin's [`signals`](crate::signals): `signal` / `signal_clear` frames,
-    /// and sends `signal_demand` and the `signal_read` request.
+    /// and sends `signal_demand`. Signals are pushed only; there is no read request.
     pub const SIGNALS: &str = "signals";
 
     /// Every feature defined by this version of the protocol.
@@ -122,12 +122,7 @@ pub mod requests {
     pub const QUERY: &str = "query";
     /// `params: {instance_id, action_id, inputs}`; the plugin answers with a dynamic wheel's buttons.
     pub const WHEEL: &str = "wheel";
-    /// `params: {signal}`; the plugin answers with the signal's current value (any JSON; `[]` or
-    /// `""` for "nothing"), or fails when it has no value now. Sent for a signal declared with
-    /// mode `sample` or `both`, when the host needs it fresh (the dial opens). Needs `signals`.
-    pub const SIGNAL_READ: &str = "signal_read";
-
-    pub const ALL: &[&str] = &[QUERY, WHEEL, SIGNAL_READ];
+    pub const ALL: &[&str] = &[QUERY, WHEEL];
 }
 
 /// Values of [`PluginMsg::HostCall`] `method`.
@@ -217,7 +212,8 @@ pub enum HostMsg {
     /// The answer to a plugin's `host_call`.
     Result(CallResult),
     /// The signals (of those this plugin declares) that some profile rule uses now; replaces the
-    /// previous list. A plugin watches only these. Needs `signals`.
+    /// previous list. A plugin watches only these, and reports each one's current value as it
+    /// starts watching. Needs `signals`.
     SignalDemand {
         /// Signal ids from the plugin's manifest `signals`.
         signals: Vec<String>,

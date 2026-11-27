@@ -163,6 +163,46 @@
       ]
     },
     {
+      "description": "A signal the plugin declares has a new value. The host keeps the last one and checks it\nagainst the declaration (an `enum` value outside its options is dropped). Needs `signals`.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "signal"
+        },
+        "signal": {
+          "description": "A manifest `signals[].id`.",
+          "type": "string"
+        },
+        "value": {
+          "description": "The value, shaped as the declaration says: a string, number or bool, or an array of\nthem for a `multi` signal (`[]`: reported, nothing)."
+        }
+      },
+      "required": [
+        "type",
+        "signal",
+        "value"
+      ]
+    },
+    {
+      "description": "A signal the plugin declares has no value now (it does not apply, e.g. the window is not a\nfile manager). Unlike an empty value, a rule never holds on it, negated or not.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "signal_clear"
+        },
+        "signal": {
+          "description": "A manifest `signals[].id`.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "signal"
+      ]
+    },
+    {
       "description": "The plugin's setup is no longer valid (an expired token…); the host asks the user again.",
       "type": "object",
       "properties": {

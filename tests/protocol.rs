@@ -384,12 +384,49 @@ fn subscribed_events_reach_on_event_and_ready_lists_them() {
 }
 
 #[test]
+fn signals_are_declared_demanded_read_and_reported() {
+    let dir = tempfile_dir("signals");
+    let mut h = Host::start_with(&dir, json!(["signals"]));
+    h.expect("ready");
+    // Demand starts the plugin's watcher: it reports a value.
+    h.send(json!({"type": "signal_demand", "signals": ["files.extension"]}));
+    let m = h.expect("signal");
+    assert_eq!((m["signal"].as_str(), &m["value"]), (Some("files.extension"), &json!(["pdf"])));
+    // The host asks for a fresh value.
+    h.send(json!({"type": "request", "id": "s1", "method": "signal_read", "params": {"signal": "files.extension"}}));
+    let r = h.expect("result");
+    assert_eq!((r["ok"].as_bool(), &r["value"]), (Some(true), &json!(["pdf", "png"])));
+    h.send(json!({"type": "request", "id": "s2", "method": "signal_read", "params": {"signal": "nope.nothing"}}));
+    assert_eq!(h.expect("result")["ok"], false);
+    // No demand left: the watcher stops and the value no longer applies.
+    h.send(json!({"type": "signal_demand", "signals": []}));
+    assert_eq!(h.expect("signal_clear")["signal"], "files.extension");
+    drop(h.stdin);
+    wait_exit(&mut h.child);
+    std::fs::remove_dir_all(&dir).ok();
+
+    // A host without the feature gets nothing.
+    let dir = tempfile_dir("signals-old");
+    let mut h = Host::start(&dir);
+    h.expect("ready");
+    h.send(json!({"type": "signal_demand", "signals": ["files.extension"]}));
+    h.send(json!({"type": "request", "id": "q", "method": "signal_read", "params": {"signal": "files.extension"}}));
+    assert!(h.expect("result")["ok"].as_bool().unwrap(), "reading still answers");
+    drop(h.stdin);
+    wait_exit(&mut h.child);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
 fn codegen_emits_manifest_and_actions() {
     let out = Command::new(demo_exe()).env("KNOBDECK_CODEGEN", "1").env("KNOBDECK_STAGE", "build").output().unwrap();
     assert!(out.status.success());
     let v: Value = serde_json::from_slice(&out.stdout).unwrap();
     assert_eq!(v["manifest"]["id"], "example-rust");
     assert_eq!(v["manifest"]["protocol"], 2);
+    let sig = &v["manifest"]["signals"][0];
+    assert_eq!((sig["id"].as_str(), sig["kind"].as_str(), sig["multi"].as_bool(), sig["mode"].as_str()), (Some("files.extension"), Some("enum"), Some(true), Some("both")));
+    assert_eq!(sig["options"][0], json!({"value": "pdf", "label": "PDF"}));
     assert!(v["manifest"]["runtime"].get("language").is_none());
     let actions = v["actions"]["actions"].as_array().unwrap();
     assert_eq!(actions[0]["id"], knobdeck_sdk::make_full_id("example-rust", "ping"));

@@ -29,7 +29,7 @@ export const CONTROL_COMMANDS = ["open_dial", "close_dial", "run_item", "list_pr
 export type ControlCommand = (typeof CONTROL_COMMANDS)[number];
 
 /** Optional host behaviour, listed in `hello.features`. */
-export const FEATURES = ["state_match", "events", "notify", "app_state", "open_dial", "companion_hub", "state_value"] as const;
+export const FEATURES = ["state_match", "events", "notify", "app_state", "open_dial", "companion_hub", "state_value", "signals"] as const;
 export type Feature = (typeof FEATURES)[number];
 
 /** Host events a plugin can subscribe to. */
@@ -41,7 +41,7 @@ export const TRIGGERS = ["press", "hold_start", "hold_end", "adjust"] as const;
 export type Trigger = (typeof TRIGGERS)[number];
 
 /** Values of `request.method`. */
-export const REQUESTS = ["query", "wheel"] as const;
+export const REQUESTS = ["query", "wheel", "signal_read"] as const;
 export type RequestMethod = (typeof REQUESTS)[number];
 
 /** Values of `host_call.method`. */
@@ -296,6 +296,38 @@ export interface RunItem {
   value?: number;
 }
 
+/** One entry of a manifest's `signals`. */
+export interface SignalDecl {
+  /** `<namespace>.<name>`, lowercase. */
+  id: string;
+  /** Shown in the rule editor. */
+  label: string;
+  description?: string;
+  kind?: SignalKind;
+  /** The value is a set (an array): several files with different extensions are selected. */
+  multi?: boolean;
+  mode?: SignalMode;
+  /** The allowed values of an `enum` signal. */
+  options?: SignalOption[];
+  /** OSes the signal exists on (`windows`, `macos`, `linux`). Empty: every OS. */
+  platforms?: string[];
+}
+
+/** What a signal's value is. */
+export interface SignalKind {
+}
+
+/** How the host gets the signal's value. */
+export interface SignalMode {
+}
+
+/** One allowed value of an `enum` signal. */
+export interface SignalOption {
+  value: string;
+  /** Shown in the rule editor; defaults to `value`. */
+  label?: string;
+}
+
 /** The body of a `state` frame: a new state and/or a temporary label or icon, and who gets it. */
 export interface StateUpdate {
   /** One instance. Wins over `action_id`. */
@@ -373,6 +405,16 @@ export interface HostResult extends CallResult {
   type: "result";
 }
 
+/**
+ * The signals (of those this plugin declares) that some profile rule uses now; replaces the
+ * previous list. A plugin watches only these. Needs `signals`.
+ */
+export interface HostSignalDemand {
+  type: "signal_demand";
+  /** Signal ids from the plugin's manifest `signals`. */
+  signals: string[];
+}
+
 /** Stop now. The host kills the process if it is still alive two seconds later. */
 export interface HostShutdown {
   type: "shutdown";
@@ -386,6 +428,7 @@ export type HostMsg =
   | HostRequest
   | HostEvent
   | HostResult
+  | HostSignalDemand
   | HostShutdown;
 
 /** The first line, after `hello`. */
@@ -449,6 +492,31 @@ export interface PluginSubscribe {
   events: string[];
 }
 
+/**
+ * A signal the plugin declares has a new value. The host keeps the last one and checks it
+ * against the declaration (an `enum` value outside its options is dropped). Needs `signals`.
+ */
+export interface PluginSignal {
+  type: "signal";
+  /** A manifest `signals[].id`. */
+  signal: string;
+  /**
+   * The value, shaped as the declaration says: a string, number or bool, or an array of
+   * them for a `multi` signal (`[]`: reported, nothing).
+   */
+  value: unknown;
+}
+
+/**
+ * A signal the plugin declares has no value now (it does not apply, e.g. the window is not a
+ * file manager). Unlike an empty value, a rule never holds on it, negated or not.
+ */
+export interface PluginSignalClear {
+  type: "signal_clear";
+  /** A manifest `signals[].id`. */
+  signal: string;
+}
+
 /** The plugin's setup is no longer valid (an expired token…); the host asks the user again. */
 export interface PluginSetupRequired {
   type: "setup_required";
@@ -480,6 +548,8 @@ export type PluginMsg =
   | PluginResult
   | PluginHostCall
   | PluginSubscribe
+  | PluginSignal
+  | PluginSignalClear
   | PluginSetupRequired
   | PluginCompanion;
 

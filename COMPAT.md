@@ -54,7 +54,7 @@ break (below). Everything else ships inside the same number.
 
 Behaviour that only some hosts have is announced in `hello.features` (a list of strings) and used only
 when present. Today: `state_match` (a `state`/`error` frame may carry `match`), `events`, `notify`,
-`app_state`, `open_dial`, `companion_hub` and `state_value` (a `state` frame may carry `value`, which the
+`app_state`, `open_dial`, `companion_hub`, `signals` (the `signal` frames, below) and `state_value` (a `state` frame may carry `value`, which the
 host puts in the tile title's `{0}` / `%0%`; the SDK sends it as `label` to a host without it). A plugin that wants a
 feature checks the list and falls back when it is absent; the SDK does this for you. Features are
 additive and don't count toward the protocol number. New host calls and events follow the same rule.

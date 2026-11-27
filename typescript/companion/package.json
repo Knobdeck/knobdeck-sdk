@@ -1,6 +1,6 @@
 {
   "name": "@knobdeck/companion",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Connect an add-on inside another app to its KnobDeck plugin through KnobDeck's companion hub",
   "license": "MIT",
   "type": "module",
@@ -38,6 +38,6 @@
     "provenance": true
   },
   "dependencies": {
-    "@knobdeck/protocol": "0.2.0"
+    "@knobdeck/protocol": "0.3.0"
   }
 }

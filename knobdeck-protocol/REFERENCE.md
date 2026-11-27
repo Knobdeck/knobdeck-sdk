@@ -10,10 +10,10 @@ Machine-readable forms: `schema/*.json` (JSON Schema for each direction of both 
 
 ## Names
 
-- **Features (`hello.features`):** `state_match`, `events`, `notify`, `app_state`, `open_dial`, `companion_hub`, `state_value`
+- **Features (`hello.features`):** `state_match`, `events`, `notify`, `app_state`, `open_dial`, `companion_hub`, `state_value`, `signals`
 - **Events (`ready.subscribe`, `subscribe`, `event.event`):** `focus_changed`, `dial_opened`, `dial_closed`, `profiles_changed`, `companion_connected`, `companion_disconnected`, `companion_event`
 - **Triggers (`invoke.trigger`):** `press`, `hold_start`, `hold_end`, `adjust`
-- **Request methods (`request.method`):** `query`, `wheel`
+- **Request methods (`request.method`):** `query`, `wheel`, `signal_read`
 - **Host calls (`host_call.method`):** `send_keys`, `notify`, `app_state`, `open_dial`, `companion_request`, `companion_links`
 
 ## Host → plugin
@@ -34,7 +34,7 @@ The body of `hello`: who the plugin is and what the host can do.
 | `host_pid` | `number` | no | The host's process id, so a plugin can leave KnobDeck's own windows out of "the target window". |
 
 ```json
-{"type":"hello","protocol":2,"plugin_id":"example-rust","data_dir":"/tmp/knobdeck/plugin-data/example-rust","host_version":"1.0.0","features":["state_match","events","notify","app_state","open_dial","companion_hub","state_value"],"host_pid":4242}
+{"type":"hello","protocol":2,"plugin_id":"example-rust","data_dir":"/tmp/knobdeck/plugin-data/example-rust","host_version":"1.0.0","features":["state_match","events","notify","app_state","open_dial","companion_hub","state_value","signals"],"host_pid":4242}
 ```
 
 ### `sync`
@@ -82,6 +82,7 @@ Ask the plugin for data; answered by a `result` with the same `id`.
 
 ```json
 {"type":"request","id":"q1","method":"query","params":{"query_id":"items","inputs":{"group":"fruit"}}}
+{"type":"request","id":"s1","method":"signal_read","params":{"signal":"files.extension"}}
 ```
 
 ### `event`
@@ -120,6 +121,19 @@ The answer to a plugin's `host_call`.
 {"type":"result","id":"h2","ok":false,"error":"not possible"}
 {"type":"result","id":"c2","ok":true,"value":{"os":"linux","host_version":"1.0.0","dial_open":false}}
 {"type":"result","id":"c5","ok":true,"value":{"id":"7","ok":true,"result":{"tool":"brush"}}}
+```
+
+### `signal_demand`
+
+The signals (of those this plugin declares) that some profile rule uses now; replaces the
+previous list. A plugin watches only these. Needs `signals`.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `signals` | `string[]` | yes | Signal ids from the plugin's manifest `signals`. |
+
+```json
+{"type":"signal_demand","signals":["files.extension"]}
 ```
 
 ### `shutdown`
@@ -232,6 +246,7 @@ The answer to a host `request`.
 ```json
 {"type":"result","id":"q1","ok":true,"value":["apple","pear"]}
 {"type":"result","id":"q2","ok":false,"error":"unknown query \"nope\""}
+{"type":"result","id":"s1","ok":true,"value":["pdf","png"]}
 ```
 
 ### `host_call`
@@ -264,6 +279,33 @@ Replace the plugin's event subscriptions.
 ```json
 {"type":"subscribe","events":["focus_changed"]}
 {"type":"subscribe","events":["dial_opened","dial_closed","profiles_changed"]}
+```
+
+### `signal`
+
+A signal the plugin declares has a new value. The host keeps the last one and checks it
+against the declaration (an `enum` value outside its options is dropped). Needs `signals`.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `signal` | `string` | yes | A manifest `signals[].id`. |
+| `value` | `unknown` | yes | The value, shaped as the declaration says: a string, number or bool, or an array of them for a `multi` signal (`[]`: reported, nothing). |
+
+```json
+{"type":"signal","signal":"files.extension","value":["pdf","png"]}
+```
+
+### `signal_clear`
+
+A signal the plugin declares has no value now (it does not apply, e.g. the window is not a
+file manager). Unlike an empty value, a rule never holds on it, negated or not.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `signal` | `string` | yes | A manifest `signals[].id`. |
+
+```json
+{"type":"signal_clear","signal":"files.extension"}
 ```
 
 ### `setup_required`
@@ -677,6 +719,42 @@ One dial profile in `list_profiles`.
 | `profile_id` | `string` | yes | A dial profile id (`list_profiles`). |
 | `item_id` | `string` | yes | The item's id in that profile (folders included). |
 | `value` | `number` | no | For a slider: the value to set. |
+
+### `SignalDecl`
+
+One entry of a manifest's `signals`.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `id` | `string` | yes | `<namespace>.<name>`, lowercase. |
+| `label` | `string` | yes | Shown in the rule editor. |
+| `description` | `string` | no |  |
+| `kind` | `SignalKind` | no |  |
+| `multi` | `boolean` | no | The value is a set (an array): several files with different extensions are selected. |
+| `mode` | `SignalMode` | no |  |
+| `options` | `SignalOption[]` | no | The allowed values of an `enum` signal. |
+| `platforms` | `string[]` | no | OSes the signal exists on (`windows`, `macos`, `linux`). Empty: every OS. |
+
+### `SignalKind`
+
+What a signal's value is.
+
+No fields besides `type`.
+
+### `SignalMode`
+
+How the host gets the signal's value.
+
+No fields besides `type`.
+
+### `SignalOption`
+
+One allowed value of an `enum` signal.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `value` | `string` | yes |  |
+| `label` | `string` | no | Shown in the rule editor; defaults to `value`. |
 
 ### `Subscribe`
 

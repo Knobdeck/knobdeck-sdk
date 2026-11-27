@@ -71,6 +71,9 @@ pub fn generate_manifest(p: &Plugin, stage: Stage) -> Value {
     if !m.companions.is_empty() {
         manifest.insert("companions".into(), Value::Array(m.companions.clone()));
     }
+    if !p.signals.is_empty() {
+        manifest.insert("signals".into(), serde_json::to_value(&p.signals).expect("signal declarations serialize"));
+    }
     // The OS context this binary can read (its SDK `os-*` features), for the plugins page.
     let uses = crate::context::uses();
     if !uses.is_empty() {

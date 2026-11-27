@@ -59,8 +59,12 @@ pub mod features {
     /// A `state` frame may carry `value`: the host fills the tile title's `{0}` / `%0%` with it.
     pub const STATE_VALUE: &str = "state_value";
 
+    /// The host takes the plugin's [`signals`](crate::signals): `signal` / `signal_clear` frames,
+    /// and sends `signal_demand` and the `signal_read` request.
+    pub const SIGNALS: &str = "signals";
+
     /// Every feature defined by this version of the protocol.
-    pub const ALL: &[&str] = &[STATE_MATCH, EVENTS, NOTIFY, APP_STATE, OPEN_DIAL, COMPANION_HUB, STATE_VALUE];
+    pub const ALL: &[&str] = &[STATE_MATCH, EVENTS, NOTIFY, APP_STATE, OPEN_DIAL, COMPANION_HUB, STATE_VALUE, SIGNALS];
 }
 
 /// Host events a plugin can subscribe to (`ready.subscribe`, `subscribe`).
@@ -118,8 +122,12 @@ pub mod requests {
     pub const QUERY: &str = "query";
     /// `params: {instance_id, action_id, inputs}`; the plugin answers with a dynamic wheel's buttons.
     pub const WHEEL: &str = "wheel";
+    /// `params: {signal}`; the plugin answers with the signal's current value (any JSON; `[]` or
+    /// `""` for "nothing"), or fails when it has no value now. Sent for a signal declared with
+    /// mode `sample` or `both`, when the host needs it fresh (the dial opens). Needs `signals`.
+    pub const SIGNAL_READ: &str = "signal_read";
 
-    pub const ALL: &[&str] = &[QUERY, WHEEL];
+    pub const ALL: &[&str] = &[QUERY, WHEEL, SIGNAL_READ];
 }
 
 /// Values of [`PluginMsg::HostCall`] `method`.
@@ -154,6 +162,7 @@ pub mod host_calls {
 
 pub mod companion;
 pub mod control;
+pub mod signals;
 
 /// TypeScript plugins: KnobDeck runs them all in one shared Node process (`typescript/runner`).
 pub mod node {
@@ -207,6 +216,12 @@ pub enum HostMsg {
     },
     /// The answer to a plugin's `host_call`.
     Result(CallResult),
+    /// The signals (of those this plugin declares) that some profile rule uses now; replaces the
+    /// previous list. A plugin watches only these. Needs `signals`.
+    SignalDemand {
+        /// Signal ids from the plugin's manifest `signals`.
+        signals: Vec<String>,
+    },
     /// Stop now. The host kills the process if it is still alive two seconds later.
     Shutdown,
     /// A frame type this version doesn't know. Receivers ignore it. Never sent.
@@ -364,6 +379,21 @@ pub enum PluginMsg {
     Subscribe {
         /// [`events`] values; an empty list unsubscribes from everything.
         events: Vec<String>,
+    },
+    /// A signal the plugin declares has a new value. The host keeps the last one and checks it
+    /// against the declaration (an `enum` value outside its options is dropped). Needs `signals`.
+    Signal {
+        /// A manifest `signals[].id`.
+        signal: String,
+        /// The value, shaped as the declaration says: a string, number or bool, or an array of
+        /// them for a `multi` signal (`[]`: reported, nothing).
+        value: Value,
+    },
+    /// A signal the plugin declares has no value now (it does not apply, e.g. the window is not a
+    /// file manager). Unlike an empty value, a rule never holds on it, negated or not.
+    SignalClear {
+        /// A manifest `signals[].id`.
+        signal: String,
     },
     /// The plugin's setup is no longer valid (an expired token…); the host asks the user again.
     SetupRequired {

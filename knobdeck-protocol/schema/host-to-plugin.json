@@ -116,6 +116,27 @@
       ]
     },
     {
+      "description": "The signals (of those this plugin declares) that some profile rule uses now; replaces the\nprevious list. A plugin watches only these. Needs `signals`.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "signal_demand"
+        },
+        "signals": {
+          "description": "Signal ids from the plugin's manifest `signals`.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "signals"
+      ]
+    },
+    {
       "description": "Stop now. The host kills the process if it is still alive two seconds later.",
       "type": "object",
       "properties": {

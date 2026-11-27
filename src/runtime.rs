@@ -136,6 +136,8 @@ pub(crate) struct Inner {
     state_match: bool,
     /// Everything the host listed in `hello.features`.
     features: Vec<String>,
+    /// The signals the host wants now (`signal_demand`).
+    signal_demand: Mutex<Vec<String>>,
 }
 
 /// Handle for pushing state/visuals/errors outside of a handler (timers, pollers,
@@ -258,6 +260,28 @@ impl Runtime {
         if !names.is_empty() {
             self.send(PluginMsg::Subscribe { events: names });
         }
+    }
+    /// Report a signal's value (declared with [`Plugin::signal`]). Does nothing on a host without
+    /// the `signals` feature. Send it when the value changes; the host drops repeats.
+    pub fn signal(&self, id: &str, value: impl Into<Value>) {
+        if self.has_feature(features::SIGNALS) {
+            self.send(PluginMsg::Signal { signal: id.to_string(), value: value.into() });
+        }
+    }
+    /// The signal has no value now (it does not apply): rules never hold on it, negated or not.
+    /// Different from reporting an empty set.
+    pub fn clear_signal(&self, id: &str) {
+        if self.has_feature(features::SIGNALS) {
+            self.send(PluginMsg::SignalClear { signal: id.to_string() });
+        }
+    }
+    /// The signals the host wants now (what [`Plugin::on_signal_demand`] last got).
+    pub fn signal_demand(&self) -> Vec<String> {
+        self.0.signal_demand.lock().unwrap().clone()
+    }
+    /// Whether the host wants signal `id` now.
+    pub fn signal_wanted(&self, id: &str) -> bool {
+        self.0.signal_demand.lock().unwrap().iter().any(|s| s == id)
     }
     /// Tell the host this plugin needs setup again (expired token, revoked
     /// auth…). The host remembers it, stops the plugin and asks the user to run
@@ -471,6 +495,7 @@ fn serve(plugin: Plugin) -> ! {
         pending: Default::default(),
         next_id: AtomicU64::new(1),
         workers: Default::default(),
+        signal_demand: Default::default(),
         state_match: hello["features"]
             .as_array()
             .is_some_and(|f| f.iter().any(|x| x == FEATURE_STATE_MATCH)),
@@ -661,9 +686,18 @@ fn dispatch(core: &Arc<Core>, msg: Value) {
         "request" => match msg["method"].as_str().unwrap_or("") {
             "query" => spawn("query", move || handle_query(&c, &msg)),
             "wheel" => spawn("wheel", move || handle_wheel(&c, &msg)),
+            "signal_read" => spawn("signal_read", move || handle_signal_read(&c, &msg)),
             other => core.rt.send(PluginMsg::Result(CallResult::err(id_of(&msg), format!("unknown request method \"{other}\"")))),
         },
         "event" => handle_event(core, msg),
+        "signal_demand" => {
+            let wanted: Vec<String> = msg["signals"].as_array().into_iter().flatten().filter_map(|v| v.as_str().map(String::from)).collect();
+            *core.rt.0.signal_demand.lock().unwrap() = wanted.clone();
+            if let Some(f) = core.plugin.on_signal_demand.clone() {
+                let rt = core.rt.clone();
+                spawn("signal_demand", move || f(&wanted, &rt));
+            }
+        }
         "result" => {
             let Some(id) = msg["id"].as_str() else { return };
             if let Some(tx) = core.rt.0.pending.lock().unwrap().remove(id) {
@@ -903,6 +937,15 @@ fn handle_query(core: &Arc<Core>, msg: &Value) {
         }),
     };
     reply(core, &msg["id"], outcome, &format!("query ({qid})"));
+}
+
+fn handle_signal_read(core: &Arc<Core>, msg: &Value) {
+    let id = msg["params"]["signal"].as_str().unwrap_or("");
+    let outcome = match core.plugin.on_signal_read.as_ref() {
+        Some(f) if core.plugin.signals.iter().any(|d| d.id == id) => f(id, &core.rt),
+        _ => Err(Error::msg(format!("no value for signal \"{id}\""))),
+    };
+    reply(core, &msg["id"], outcome, &format!("signal_read ({id})"));
 }
 
 fn handle_wheel(core: &Arc<Core>, msg: &Value) {

@@ -42,11 +42,11 @@ fn every_plugin_frame_round_trips() {
 fn every_message_type_has_a_fixture() {
     let types = |dir| fixtures::frames(fixtures::V2, dir).iter().map(|f| f["type"].as_str().unwrap().to_string()).collect::<Vec<_>>();
     let host = types("to_plugin");
-    for t in ["hello", "sync", "invoke", "request", "event", "result", "shutdown"] {
+    for t in ["hello", "sync", "invoke", "request", "event", "result", "shutdown", "signal_demand"] {
         assert!(host.iter().any(|x| x == t), "no to_plugin fixture for {t:?}");
     }
     let plugin = types("to_host");
-    for t in ["ready", "ack", "done", "state", "error", "result", "host_call", "subscribe", "setup_required", "companion"] {
+    for t in ["ready", "ack", "done", "state", "error", "result", "host_call", "subscribe", "setup_required", "companion", "signal", "signal_clear"] {
         assert!(plugin.iter().any(|x| x == t), "no to_host fixture for {t:?}");
     }
 }

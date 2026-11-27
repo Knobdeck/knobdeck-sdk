@@ -16,6 +16,7 @@
 | `.companion(id, name, url)` | a companion the plugin needs (browser extension, IDE plugin…): shown on the plugin page with where to get it, and on placed actions while it isn't connected |
 | `.on_ready(\|rt: &Runtime\| ..)` | once after the first sync; clone `rt` into your threads |
 | `.subscribe(&[..])` `.on_event(\|e: &Event, rt\| ..)` | host events: `protocol::events::{DIAL_OPENED, DIAL_CLOSED, PROFILES_CHANGED}` (hosts with the `events` feature) |
+| `.signal(SignalDecl::choice("files.extension", "File type", &[("pdf","PDF")]).multi())` `.on_signal_demand(\|wanted, rt\| ..)` `.on_signal_read(\|id, rt\| Ok(json!(..)))` | a value about the user's context that profile auto-open rules can test (hosts with the `signals` feature). Report it with `rt.signal(id, value)`, or `rt.clear_signal(id)` when it does not apply (different from an empty set `[]`). Watch only the signals `on_signal_demand` lists; `mode(SignalMode::Sample)` makes the host ask (`on_signal_read`) instead of you pushing. Ids are `<namespace>.<name>`, not tied to your plugin id (it ships per OS); an `enum` value outside the declared options is dropped |
 | `.on_shutdown(\|rt\| ..)` | the host kills the process 2 s later |
 | `.ack_timeout_ms(n)` `.query_timeout_ms(n)` | raise host timeouts for slow handlers |
 | `.run()` | start (never returns) |

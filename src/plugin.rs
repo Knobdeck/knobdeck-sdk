@@ -29,6 +29,8 @@ pub(crate) type QueryFn = Arc<dyn Fn(&QueryCtx) -> Result<Value> + Send + Sync>;
 pub(crate) type ReadyFn = Arc<dyn Fn(&Runtime) -> Result + Send + Sync>;
 pub(crate) type EventFn = Arc<dyn Fn(&Event, &Runtime) -> Result + Send + Sync>;
 pub(crate) type LiveFn = Arc<dyn Fn(&InitialCtx) -> Result<Visual> + Send + Sync>;
+pub(crate) type SignalReadFn = Arc<dyn Fn(&str, &Runtime) -> Result<Value> + Send + Sync>;
+pub(crate) type SignalDemandFn = Arc<dyn Fn(&[String], &Runtime) + Send + Sync>;
 pub(crate) type ShutdownFn = Arc<dyn Fn(&Runtime) + Send + Sync>;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -300,6 +302,9 @@ pub struct Plugin {
     pub(crate) on_event: Option<EventFn>,
     pub(crate) on_shutdown: Option<ShutdownFn>,
     pub(crate) subscriptions: Vec<String>,
+    pub(crate) signals: Vec<knobdeck_protocol::signals::SignalDecl>,
+    pub(crate) on_signal_read: Option<SignalReadFn>,
+    pub(crate) on_signal_demand: Option<SignalDemandFn>,
     pub(crate) ready_fired: AtomicBool,
 }
 
@@ -316,6 +321,9 @@ impl Plugin {
             on_event: None,
             on_shutdown: None,
             subscriptions: vec![],
+            signals: vec![],
+            on_signal_read: None,
+            on_signal_demand: None,
             ready_fired: AtomicBool::new(false),
         }
     }
@@ -413,6 +421,36 @@ impl Plugin {
         assert!(!id.is_empty(), "KnobDeck SDK: query must have an id");
         assert!(!self.queries.contains_key(id), "KnobDeck SDK: duplicate query id \"{id}\"");
         self.queries.insert(id.into(), Arc::new(f));
+        self
+    }
+
+    /// Declare a signal this plugin reports (`manifest.signals`): a value about the user's context
+    /// that profile auto-open rules can test. The host reads the declaration while the plugin is
+    /// not running, so it is static. Report values with [`Runtime::signal`] /
+    /// [`Runtime::clear_signal`]; watch only what [`Plugin::on_signal_demand`] lists.
+    pub fn signal(mut self, decl: knobdeck_protocol::signals::SignalDecl) -> Self {
+        assert!(
+            knobdeck_protocol::signals::SignalDecl::valid_id(&decl.id),
+            "KnobDeck SDK: signal id \"{}\" must be <namespace>.<name>, lowercase",
+            decl.id
+        );
+        assert!(!self.signals.iter().any(|d| d.id == decl.id), "KnobDeck SDK: duplicate signal \"{}\"", decl.id);
+        self.signals.push(decl);
+        self
+    }
+
+    /// The host asks for a signal's current value (mode `sample` / `both`), e.g. as the dial opens.
+    /// Return the value, or an error when there is none now (the host then treats it as unset).
+    pub fn on_signal_read(mut self, f: impl Fn(&str, &Runtime) -> Result<Value> + Send + Sync + 'static) -> Self {
+        self.on_signal_read = Some(Arc::new(f));
+        self
+    }
+
+    /// The signals some profile rule uses changed (also at start). Start watchers for the listed
+    /// signals and stop the others; the list is every wanted signal of this plugin, not a diff.
+    /// Runs on its own thread.
+    pub fn on_signal_demand(mut self, f: impl Fn(&[String], &Runtime) + Send + Sync + 'static) -> Self {
+        self.on_signal_demand = Some(Arc::new(f));
         self
     }
 

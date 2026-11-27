@@ -4,7 +4,7 @@
 import type { HostMsg, PluginMsg, CompanionMsg, HubMsg, ClientMsg, ServerMsg } from "../src/index.ts";
 
 export const toPlugin: HostMsg[] = [
-  {"type":"hello","protocol":2,"plugin_id":"example-rust","data_dir":"/tmp/knobdeck/plugin-data/example-rust","host_version":"1.0.0","features":["state_match","events","notify","app_state","open_dial","companion_hub","state_value"],"host_pid":4242},
+  {"type":"hello","protocol":2,"plugin_id":"example-rust","data_dir":"/tmp/knobdeck/plugin-data/example-rust","host_version":"1.0.0","features":["state_match","events","notify","app_state","open_dial","companion_hub","state_value","signals"],"host_pid":4242},
   {"type":"sync","instances":[{"instance_id":"i1","action_id":"example-rust-mute-0a1b2c3d","inputs":{}}]},
   {"type":"invoke","id":"r1","instance_id":"i1","action_id":"example-rust-mute-0a1b2c3d","trigger":"press","inputs":{}},
   {"type":"invoke","id":"r2","instance_id":"v1","action_id":"example-rust-volume-4e5f6a7b","trigger":"adjust","inputs":{"value":40}},
@@ -21,6 +21,8 @@ export const toPlugin: HostMsg[] = [
   {"type":"event","event":"companion_event","payload":{"link":"photoshop-1","event":"tool_changed","payload":{"tool":"eraser"}}},
   {"type":"event","event":"companion_disconnected","payload":{"link":"photoshop-1"}},
   {"type":"result","id":"c5","ok":true,"value":{"id":"7","ok":true,"result":{"tool":"brush"}}},
+  {"type":"signal_demand","signals":["files.extension"]},
+  {"type":"request","id":"s1","method":"signal_read","params":{"signal":"files.extension"}},
 ];
 
 export const toHost: PluginMsg[] = [
@@ -47,6 +49,9 @@ export const toHost: PluginMsg[] = [
   {"type":"host_call","id":"c4","method":"open_dial","params":{"profile_id":"streaming"}},
   {"type":"host_call","id":"c5","method":"companion_request","params":{"link":"photoshop-1","action":"set-tool","params":{"tool":"brush"},"timeout_ms":5000}},
   {"type":"host_call","id":"c6","method":"companion_links","params":{}},
+  {"type":"result","id":"s1","ok":true,"value":["pdf","png"]},
+  {"type":"signal","signal":"files.extension","value":["pdf","png"]},
+  {"type":"signal_clear","signal":"files.extension"},
 ];
 
 export const toHub: CompanionMsg[] = [

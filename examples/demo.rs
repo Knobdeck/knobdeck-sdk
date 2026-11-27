@@ -97,6 +97,23 @@ fn main() {
             }
             Ok(())
         })
+        .signal(
+            knobdeck_sdk::SignalDecl::choice("files.extension", "File type", &[("pdf", "PDF"), ("png", "PNG")])
+                .multi()
+                .mode(knobdeck_sdk::SignalMode::Both),
+        )
+        .on_signal_read(|id, _| match id {
+            "files.extension" => Ok(json!(["pdf", "png"])),
+            _ => Err(knobdeck_sdk::Error::msg("no value")),
+        })
+        .on_signal_demand(|wanted, rt| {
+            // A real plugin starts or stops its watcher here; the demo reports once.
+            if wanted.iter().any(|w| w == "files.extension") {
+                rt.signal("files.extension", json!(["pdf"]));
+            } else {
+                rt.clear_signal("files.extension");
+            }
+        })
         .query("groups", |_| Ok(json!([{"value": "fruit", "label": "Fruit"}, {"value": "veg", "label": "Veg"}])))
         .query("items", |ctx| {
             Ok(match ctx.input_str("group").as_str() {

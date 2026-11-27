@@ -54,6 +54,7 @@ pub fn payload_defs() -> BTreeMap<String, Value> {
     g.subschema_for::<Notify>();
     g.subschema_for::<AppState>();
     g.subschema_for::<OpenDial>();
+    g.subschema_for::<crate::signals::SignalDecl>();
     g.subschema_for::<companion::Link>();
     g.subschema_for::<companion::LinkGone>();
     g.subschema_for::<companion::LinkEvent>();

@@ -392,6 +392,117 @@
       ],
       "description": "`params` of `run_item`."
     },
+    "SignalDecl": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "`<namespace>.<name>`, lowercase."
+        },
+        "label": {
+          "type": "string",
+          "description": "Shown in the rule editor."
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "$ref": "#/$defs/SignalKind",
+          "default": "text"
+        },
+        "multi": {
+          "type": "boolean",
+          "description": "The value is a set (an array): several files with different extensions are selected."
+        },
+        "mode": {
+          "$ref": "#/$defs/SignalMode",
+          "default": "push"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SignalOption"
+          },
+          "description": "The allowed values of an `enum` signal."
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "OSes the signal exists on (`windows`, `macos`, `linux`). Empty: every OS."
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "description": "One entry of a manifest's `signals`."
+    },
+    "SignalKind": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "number",
+            "bool"
+          ]
+        },
+        {
+          "type": "string",
+          "const": "text",
+          "description": "Open-ended text; a rule matches it as a substring or `/regex/`."
+        },
+        {
+          "type": "string",
+          "const": "enum",
+          "description": "One of [`SignalDecl::options`]; a value outside them is dropped."
+        }
+      ],
+      "description": "What a signal's value is."
+    },
+    "SignalMode": {
+      "oneOf": [
+        {
+          "type": "string",
+          "const": "push",
+          "description": "The plugin sends `signal` frames as the value changes."
+        },
+        {
+          "type": "string",
+          "const": "sample",
+          "description": "The host asks (`signal_read`) when it needs the value, e.g. as the dial opens."
+        },
+        {
+          "type": "string",
+          "const": "both",
+          "description": "Both: pushed, and asked when it must be fresh."
+        }
+      ],
+      "description": "How the host gets the signal's value."
+    },
+    "SignalOption": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Shown in the rule editor; defaults to `value`."
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "description": "One allowed value of an `enum` signal."
+    },
     "Subscribe": {
       "type": "object",
       "properties": {
